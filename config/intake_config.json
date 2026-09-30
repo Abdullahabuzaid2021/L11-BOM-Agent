@@ -1,0 +1,52 @@
+{
+  "intake": {
+    "enabled": true,
+    "description": "BOM Intake System Configuration - Automated monitoring and processing of new BOMs",
+
+    "directories": {
+      "input_directory": "BOM_INBOX/pending/",
+      "processing_directory": "BOM_INBOX/processing/",
+      "completed_directory": "BOM_INBOX/completed/",
+      "failed_directory": "BOM_INBOX/failed/",
+      "archive_directory": "BOM_INBOX/archive/",
+      "log_directory": "BOM_INBOX/logs/"
+    },
+
+    "monitoring": {
+      "enabled": true,
+      "check_interval_seconds": 300,
+      "max_concurrent_files": 3,
+      "file_pattern": "*.xlsx"
+    },
+
+    "validation": {
+      "check_format": true,
+      "check_duplicates": true,
+      "check_fingerprint": true,
+      "require_metadata": true,
+      "max_file_size_mb": 100,
+      "validate_on_load": true
+    },
+
+    "processing": {
+      "auto_consolidate": true,
+      "create_version": true,
+      "generate_delta": true,
+      "notify_on_completion": true,
+      "generate_report": true
+    },
+
+    "notifications": {
+      "email_on_success": [],
+      "email_on_failure": [],
+      "slack_on_completion": false,
+      "log_to_file": true
+    },
+
+    "file_handling": {
+      "move_failed_to_archive_after_days": 30,
+      "move_completed_to_archive_after_days": 90,
+      "keep_processing_logs": true
+    }
+  }
+}

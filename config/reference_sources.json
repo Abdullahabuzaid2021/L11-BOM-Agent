@@ -1,0 +1,49 @@
+{
+  "reference_databases": {
+    "dell_networking_skus": {
+      "name": "Dell Networking Components List",
+      "description": "Master reference file for Dell networking components with NVIDIA and Dell PN mappings",
+      "file_path": "Dell Networking components list details WO Pricing.xlsx",
+      "enabled": true,
+      "sheets": [
+        {
+          "name": "Enigma Prime SKU",
+          "columns": {
+            "type": "A",
+            "model_pn": "B",
+            "nvidia_pn": "C",
+            "dell_pn": "E"
+          },
+          "version": "1.0",
+          "last_updated": "2026-09-29"
+        },
+        {
+          "name": "Dell Networking SKU",
+          "columns": {
+            "type": "A",
+            "model_pn": "B",
+            "nvidia_pn": "C",
+            "dell_pn": "G"
+          },
+          "version": "1.0",
+          "last_updated": "2026-09-29"
+        }
+      ]
+    }
+  },
+
+  "reference_locations": {
+    "directory": "./",
+    "backup_directory": "./references/backups/",
+    "version_control": true,
+    "create_backups": true
+  },
+
+  "update_policy": {
+    "auto_reload": true,
+    "reload_interval_hours": 1,
+    "validate_on_load": true,
+    "backup_on_update": true,
+    "versioning": "enabled"
+  }
+}
