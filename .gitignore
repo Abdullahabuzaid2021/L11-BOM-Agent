@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+BOM_INBOX/pending/*
+BOM_INBOX/processing/*
+BOM_INBOX/completed/*
+BOM_INBOX/failed/*
+BOM_INBOX/archive/*
+BOM_INBOX/logs/*
+references/backups/*
+*.xlsx
+!Dell Networking components list details WO Pricing.xlsx
+.env
+credentials.json

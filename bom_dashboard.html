@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOM Consolidation Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 48px rgba(0,0,0,0.15);
+        }
+
+        .stat-card {
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-bottom: 20px;
+        }
+
+        .chart-card {
+            grid-column: span 1;
+        }
+
+        .wide-card {
+            grid-column: span 2;
+        }
+
+        .category-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            font-size: 0.95em;
+        }
+
+        .category-item:last-child {
+            border-bottom: none;
+        }
+
+        .category-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .category-stats {
+            display: flex;
+            gap: 20px;
+            color: #666;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .badge-high {
+            background: #fee;
+            color: #c33;
+        }
+
+        .badge-medium {
+            background: #fef5e7;
+            color: #f39c12;
+        }
+
+        .top-items {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .item-row {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 15px;
+            font-size: 0.9em;
+        }
+
+        .item-row:last-child {
+            border-bottom: none;
+        }
+
+        .item-name {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .item-qty {
+            text-align: right;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .recommendations {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .recommendations h4 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .rec-item {
+            padding: 8px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .rec-high {
+            background: #fee;
+            color: #c33;
+            border-left: 3px solid #c33;
+        }
+
+        .rec-medium {
+            background: #fef5e7;
+            color: #f39c12;
+            border-left: 3px solid #f39c12;
+        }
+
+        .filter-section {
+            margin-bottom: 20px;
+        }
+
+        .filter-section label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .filter-section select {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            padding: 20px;
+            opacity: 0.8;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 1200px) {
+            .wide-card {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 BOM Consolidation Dashboard</h1>
+            <p>NVIDIA L11 Network Equipment - IREN & Anthropic Combined</p>
+        </header>
+
+        <!-- Summary Stats -->
+        <div class="grid">
+            <div class="card stat-card">
+                <div class="stat-label">Total Unique Items</div>
+                <div class="stat-value" id="total-items">52</div>
+            </div>
+
+            <div class="card stat-card">
+                <div class="stat-label">Total Quantity</div>
+                <div class="stat-value" id="total-qty">1.9M</div>
+            </div>
+
+            <div class="card stat-card">
+                <div class="stat-label">Categories</div>
+                <div class="stat-value" id="total-cats">4</div>
+            </div>
+
+            <div class="card stat-card">
+                <div class="stat-label">BOM Files</div>
+                <div class="stat-value">14</div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid">
+            <div class="card chart-card">
+                <h3>Quantity by Category</h3>
+                <div class="chart-container">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card chart-card">
+                <h3>Item Distribution</h3>
+                <div class="chart-container">
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category Breakdown & Top Items -->
+        <div class="grid">
+            <div class="card">
+                <h3>📋 Category Breakdown</h3>
+                <div id="categoryBreakdown">
+                    <div class="category-item">
+                        <span class="category-name">Cables</span>
+                        <div class="category-stats">
+                            <span>15 items</span>
+                            <span style="color: #667eea;">120,481 qty</span>
+                        </div>
+                    </div>
+                    <div class="category-item">
+                        <span class="category-name">Transceiver</span>
+                        <div class="category-stats">
+                            <span>14 items</span>
+                            <span style="color: #667eea;">1,432,839 qty</span>
+                        </div>
+                    </div>
+                    <div class="category-item">
+                        <span class="category-name">Rack</span>
+                        <div class="category-stats">
+                            <span>11 items</span>
+                            <span style="color: #667eea;">326,620 qty</span>
+                        </div>
+                    </div>
+                    <div class="category-item">
+                        <span class="category-name">Switch</span>
+                        <div class="category-stats">
+                            <span>9 items</span>
+                            <span style="color: #667eea;">19,910 qty</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>⭐ Top Items by Quantity</h3>
+                <div class="top-items" id="topItems">
+                    <div class="item-row">
+                        <div class="item-name">980-9IAJ0-00XM00</div>
+                        <div class="item-qty">1.37M</div>
+                    </div>
+                    <div class="item-row">
+                        <div class="item-name">Fibre Shuffle Cassettes</div>
+                        <div class="item-qty">289K</div>
+                    </div>
+                    <div class="item-row">
+                        <div class="item-name">Fiber Jumper Cable</div>
+                        <div class="item-qty">102K</div>
+                    </div>
+                    <div class="item-row">
+                        <div class="item-name">Shuffle 4x4 units</div>
+                        <div class="item-qty">25K</div>
+                    </div>
+                    <div class="item-row">
+                        <div class="item-name">980-9I042-00C000</div>
+                        <div class="item-qty">22K</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="grid">
+            <div class="card wide-card">
+                <h3>🎯 Smart Recommendations</h3>
+                <div class="recommendations">
+                    <h4>Scale Planning</h4>
+                    <div class="rec-item rec-high">
+                        ⚠️ Very large deployment detected (1.9M items). Consider volume discounts and supply chain planning.
+                    </div>
+                </div>
+                <div class="recommendations">
+                    <h4>Infrastructure</h4>
+                    <div class="rec-item rec-high">
+                        ⚠️ Rack infrastructure required for 11 rack units. Ensure power and cooling capacity.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metadata -->
+        <div class="grid">
+            <div class="card">
+                <h3>👥 Customers & Locations</h3>
+                <div style="font-size: 0.9em; line-height: 1.8;">
+                    <div><strong style="color: #667eea;">IREN</strong></div>
+                    <div style="margin-left: 15px; color: #666;">
+                        • Mackenzie, BC<br>
+                        • Prince George, BC<br>
+                        • Sweetwater, WY<br>
+                        • Childress, TX
+                    </div>
+                    <div style="margin-top: 15px;"><strong style="color: #764ba2;">Anthropic</strong></div>
+                    <div style="margin-left: 15px; color: #666;">
+                        • Sydney, AU<br>
+                        • Toronto, CA<br>
+                        • New York, US (3 clusters)
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>📈 Deployment Summary</h3>
+                <div style="font-size: 0.9em; line-height: 2;">
+                    <div><strong>Files Consolidated:</strong> <span style="color: #667eea;">14</span></div>
+                    <div><strong>Unique Items:</strong> <span style="color: #667eea;">52</span></div>
+                    <div><strong>Total Quantity:</strong> <span style="color: #667eea;">1,899,850</span></div>
+                    <div><strong>Network Categories:</strong> <span style="color: #667eea;">4</span></div>
+                    <div style="margin-top: 15px; color: #999; font-size: 0.85em;">
+                        Last Updated: 2026-09-30<br>
+                        Status: ✅ Current
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>BOM Consolidation Dashboard • NVIDIA L11 Networking Equipment Analysis</p>
+        </footer>
+    </div>
+
+    <script>
+        // Category Chart
+        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+        new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Transceiver', 'Rack', 'Cables', 'Switch'],
+                datasets: [{
+                    data: [1432839, 326620, 120481, 19910],
+                    backgroundColor: [
+                        '#667eea',
+                        '#764ba2',
+                        '#f093fb',
+                        '#4facfe'
+                    ],
+                    borderColor: 'white',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Distribution Chart
+        const distributionCtx = document.getElementById('distributionChart').getContext('2d');
+        new Chart(distributionCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Transceiver', 'Rack', 'Cables', 'Switch'],
+                datasets: [{
+                    label: 'Item Count',
+                    data: [14, 11, 15, 9],
+                    backgroundColor: [
+                        '#667eea',
+                        '#764ba2',
+                        '#f093fb',
+                        '#4facfe'
+                    ],
+                    borderRadius: 5,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
