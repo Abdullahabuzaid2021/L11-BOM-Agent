@@ -1,260 +1,402 @@
-# Claude Skills for L11-BOM-Agent
+# L11-BOM-Agent: BOM Consolidation Solution with Reference Management & Intake System
 
-This folder contains reusable Claude skills to automate and enhance BOM management workflows.
+## 🎯 Overview
 
-## 📚 Available Skills
+A comprehensive Bill of Materials (BOM) consolidation solution for Anthropic Network Infrastructure. Consolidates 78 network components from 19 source files (9 IREN, 5 Anthropic, 4-5 NScale/CTO) into a single master BOM with interactive dashboard visualization, section-based organization, and reusable Claude skills for automation.
 
-### 🔄 BOM Consolidation Wizard
+**Status**: ✅ Production Ready | 78 Components | 6 Network Sections | 19 Source Files | Automated Skills Available
 
-**Location**: `bom-consolidation-wizard/`
+---
 
-An interactive wizard for consolidating multiple Bill of Materials files into a master BOM with automatic GitHub integration.
+## 🚀 Quick Start
 
-**What It Does:**
-- Discovers and reads multiple BOM files (Excel/XLSX)
-- Extracts metadata (customer, location) from filenames
-- Maps sections (E-W, N-S, OOB, Scale Out, etc.) from source files
-- Intelligently deduplicates components by Model/PN and Description
-- Aggregates quantities across all sources
-- Updates master BOM file
-- Regenerates interactive dashboard
-- Auto-commits & pushes to GitHub
+### 1. View the Dashboard
+**Live Dashboard**: https://abdullahabuzaid2021.github.io/L11-BOM-Agent/dashboard/
 
-**Key Features:**
-- ✅ **Interactive Mode** - Step-by-step guidance with user confirmations
-- ✅ **Batch Mode** - Automated consolidation for scheduled/daily updates
-- ✅ **Smart File Detection** - Auto-detects new files, skips already-processed ones
-- ✅ **Change Reports** - Detailed CSV & JSON reports of all changes
-- ✅ **GitHub Integration** - Auto-commit with change history
-- ✅ **Dashboard Auto-Refresh** - Updates charts and interactive data
+Interactive dashboard with:
+- 4 charts (category, customer, location, component quantities)
+- Real-time filtering
+- CSV export
+- Mobile-friendly design
 
-**When to Use:**
-- Adding new BOM files from suppliers/locations
-- Consolidating BOMs from different sources (IREN, Anthropic, NScale, etc.)
-- Updating quantities from revised BOM files
-- Deduplicating component inventory
-- Setting up automated daily BOM consolidations
-- Extracting section/category information from multiple BOMs
-
-**Quick Start:**
+### 2. Use the BOM Consolidation Skill
+**Interactive Setup** (Recommended):
 ```
-Tell Claude: "I need to consolidate 3 new BOM files into the master"
+Tell Claude: "I need to consolidate BOM files into a master inventory"
 
-Claude will guide you through:
+Claude will guide you through an interactive 6-step wizard:
 1. File discovery
 2. Metadata extraction
 3. Section mapping
-4. Deduplication review
-5. Aggregation preview
+4. Deduplication
+5. Aggregation review
 6. Update & GitHub push
 ```
 
-**Batch Mode (Automated):**
+**Automated Setup** (For Daily Updates):
 ```bash
-python bom-consolidation-wizard/scripts/consolidate_bom.py --batch
-```
-
-Use in cron/CI-CD for daily automated consolidations.
-
-**Documentation:**
-- `SKILL.md` - Comprehensive skill definition and workflow
-- `README.md` - User guide with examples and troubleshooting
-- `scripts/consolidate_bom.py` - Core consolidation engine (600+ lines)
-- `references/bom_config.yaml` - Configuration template with 30+ mappings
-- `evals/evals.json` - Test scenarios and examples
-
----
-
-## 📋 Skill Structure
-
-Each skill folder contains:
-
-```
-skill-name/
-├── SKILL.md              # Skill definition & metadata
-├── README.md             # User guide & documentation
-├── scripts/              # Executable code
-│   └── *.py             # Python scripts
-├── references/           # Configuration & reference files
-│   └── *.yaml           # YAML configs, *.md reference docs
-└── evals/               # Test cases & evaluations
-    └── evals.json       # Test scenarios
-```
-
----
-
-## 🚀 How to Use a Skill
-
-### Method 1: Install & Use (Recommended)
-
-1. **Install the skill into Claude:**
-   - Find the `.skill` file in your downloads
-   - Click "Save skill" to install
-
-2. **Use it in Claude:**
-   ```
-   I need to consolidate my BOMs
-   ```
-   Claude automatically detects the skill and guides you through the workflow.
-
-### Method 2: Manual Setup
-
-1. **Copy the skill folder** to your project
-2. **Configure it** - Edit `references/config.yaml` for your setup
-3. **Run it** - Execute the scripts as documented
-
-### Method 3: Integrate with Scripts
-
-```bash
-# Interactive mode
-python skill/bom-consolidation-wizard/scripts/consolidate_bom.py
-
-# Batch mode (automated)
 python skill/bom-consolidation-wizard/scripts/consolidate_bom.py --batch
 ```
 
 ---
 
-## 🛠️ Skill Configuration
+## 📊 Interactive Dashboard
 
-Each skill uses a YAML configuration file. For BOM Consolidation:
+### 🌐 Live Dashboard
+**View Now**: https://abdullahabuzaid2021.github.io/L11-BOM-Agent/dashboard/
 
-**File**: `bom-consolidation-wizard/references/bom_config.yaml`
+**Features**:
+- 📊 **4 Interactive Charts**: Category distribution, Customer quantities, Location quantities, Component quantities
+- 🔍 **Real-time Filtering**: Filter by Customer, Category, Location, Section
+- 📋 **Complete Data Table**: All 78 components with all source file columns
+- 📥 **CSV Export**: Download filtered data with timestamp
+- 📱 **Mobile-Friendly**: Responsive design for all devices
+- 🎨 **Color-Coded Sections**: Visual identification by network domain
 
-**Key Sections:**
-```yaml
-# File patterns & locations
-source_bom_pattern: "BOMs/*.xlsx"
-master_bom_file: "BOM_CONSOLIDATED_FINAL_WITH_SECTIONS.xlsx"
+### Dashboard Structure
+- **Summary per Sections** tab - 78 items organized by 6 network domains
+- **Summary Total** tab - Complete consolidated inventory
+- **Summary Total Comparison** tab - Changes from previous version
 
-# Column mappings (customize for your Excel structure)
-column_mappings:
-  model_pn: "A"        # Where is Model/PN in your files?
-  description: "B"     # Where is Description?
-  
-# Section mapping rules (map varied names to unified sections)
-section_mappings:
-  "Scale Out": "Scale Out Networking"
-  "E-W": "E-W Networking"
-  "OOB": "OOB Networking"
+---
 
-# GitHub integration
-github:
-  repo_path: "./L11-BOM-Agent"
-  auto_push: true
+## 🔄 Automated Consolidation with Claude Skills
 
-# Batch mode settings
-deduplication:
-  auto_threshold: 90   # Auto-approve matches >90% confidence
+### 🎯 BOM Consolidation Wizard Skill
+
+A reusable Claude skill for consolidating multiple BOM files.
+
+**What It Does**:
+- Discovers multiple BOM files from your workspace
+- Extracts customer & location metadata from filenames
+- Maps section information from source files
+- Intelligently deduplicates components
+- Aggregates quantities across all sources
+- Updates master BOM Excel file
+- Regenerates dashboard automatically
+- Commits & pushes to GitHub
+
+**Two Modes**:
+
+| Mode | Use Case | Interaction |
+|------|----------|-------------|
+| **Interactive** | Learning, validation, manual review | User approves each step |
+| **Batch** | Scheduled updates, CI/CD, daily automation | No user interaction, auto-approvals |
+
+**Features**:
+- ✅ Smart file detection (new vs. previously processed)
+- ✅ Detailed change reports (CSV & JSON)
+- ✅ GitHub integration with auto-commit
+- ✅ Configurable section mapping (30+ rules included)
+- ✅ Audit trail of all changes
+- ✅ Backup & rollback capability
+
+**Get Started**:
+1. Read the skill documentation: `skill/bom-consolidation-wizard/README.md`
+2. Customize config: `skill/bom-consolidation-wizard/references/bom_config.yaml`
+3. Run interactively or set up batch mode
+
+See [Skills Documentation](skill/README.md) for complete details.
+
+---
+
+## 📁 Repository Structure
+
+```
+L11-BOM-Agent/
+├── docs/
+│   └── dashboard/
+│       ├── index.html                           (Interactive dashboard)
+│       ├── BOM_CONSOLIDATED_FINAL_WITH_SECTIONS.xlsx  (Master data)
+│       └── README.md                            (Dashboard usage)
+├── skill/
+│   └── bom-consolidation-wizard/
+│       ├── SKILL.md                             (Skill definition)
+│       ├── README.md                            (User guide)
+│       ├── scripts/
+│       │   └── consolidate_bom.py              (Core engine)
+│       ├── references/
+│       │   └── bom_config.yaml                 (Configuration)
+│       └── evals/
+│           └── evals.json                      (Test cases)
+├── BOM_CONSOLIDATED_FINAL_WITH_SECTIONS.xlsx   (Master BOM)
+├── BOM_Dashboard_Complete.html                 (Dashboard application)
+├── README_DASHBOARD.md                         (Dashboard guide)
+├── GITHUB_PAGES_SETUP.md                       (Hosting guide)
+├── DASHBOARD_DATA_UPDATE.md                    (Data refresh guide)
+└── README.md                                   (This file)
 ```
 
 ---
 
-## 📊 Skill Capabilities Matrix
+## 🏗️ BOM Structure
 
-| Capability | BOM Consolidation | Notes |
-|------------|-------------------|-------|
-| Interactive Mode | ✅ | Step-by-step guidance |
-| Batch Mode | ✅ | Automated, no user input |
-| File Detection | ✅ | Smart new file detection |
-| Deduplication | ✅ | Multi-field matching |
-| Section Mapping | ✅ | Flexible section hierarchy |
-| Dashboard Integration | ✅ | Auto-regenerates charts |
-| GitHub Integration | ✅ | Auto-commit & push |
-| Change Reports | ✅ | CSV & JSON formats |
-| Scheduled Runs | ✅ | Via cron/scheduler |
+### 78 Network Components Across 6 Sections
+
+| Section | Items | % | Key Components |
+|---------|-------|---|-----------------|
+| **Scale Out Networking** | 29 | 37.2% | Anthropic/NScale RoCE infrastructure |
+| **N-S Networking** | 27 | 34.6% | SN5610/5600/6800/6810 spines, transceivers |
+| **Racks, PDUs, CDUs** | 7 | 9.0% | IR5000/9048/9148/9149, power distribution |
+| **OOB Networking** | 6 | 7.7% | SN2201 switches, management cables |
+| **Patch Panels/Shuffle** | 5 | 6.4% | Fiber panels, cassettes, connectors |
+| **E-W Networking** | 4 | 5.1% | SN4700 leaf switches, low-latency |
+
+### 19 Source Files
+
+**IREN (9 files)** - GPU cluster infrastructure
+- Mackenzie, Childress, Prince George, Sweetwater (2), Horizon (2)
+
+**Anthropic (5 files)** - Cloud-scale deployments
+- Australia, Canada, US-Cluster1/2/3
+
+**NScale/CTO (4 files)** - Custom deployments
+- Narvik 8k-6810, 8k, 17k, US-TBD-18k
 
 ---
 
-## 🔄 Workflow Examples
+## 📊 Master BOM File
 
-### Example 1: Add New Supplier Files
+**Location**: `BOM_CONSOLIDATED_FINAL_WITH_SECTIONS.xlsx`
+
+### Structure (3 Tabs)
+1. **Summary per sections** - 78 items organized by network section
+2. **Summary Total** - Complete consolidated inventory
+3. **Summary total comparison** - Cross-reference view
+
+### Columns (24 Total)
+- **Info (5)**: Model/PN, Description, NVIDIA PN, Dell PN, Category
+- **Sections (1)**: Network section assignment
+- **Files (18)**: Source file quantities
+- **Totals (1)**: Sum across all files
+
+### Categories (6)
+- Switch, Transceiver, Cables, Panel, Rack, Other
+
+---
+
+## 🔄 Updating the Dashboard & Master BOM
+
+### Method 1: Using the Claude Skill (Recommended)
 ```
-User: "I have 3 new Anthropic BOM files to consolidate"
+Tell Claude: "I need to consolidate new BOM files"
 
-Claude:
-1. Discovers the 3 files
-2. Extracts metadata (customer=Anthropic, locations from names)
-3. Maps sections to existing structure
-4. Shows potential duplicates with existing 78 components
-5. Asks user to approve merges
-6. Updates master BOM
-7. Regenerates dashboard
-8. Commits & pushes to GitHub
+Claude guides you through the entire workflow interactively.
 ```
 
-### Example 2: Automated Daily Consolidation
+### Method 2: Batch Automation
 ```bash
 # Setup (one time)
-cp bom-consolidation-wizard/references/bom_config.yaml ./
-# Customize config with your file paths and mappings
+cp skill/bom-consolidation-wizard/references/bom_config.yaml ./
+# Edit config with your file paths
 
-# Schedule it (in crontab)
-0 2 * * * cd /path/to/L11-BOM-Agent && python skill/bom-consolidation-wizard/scripts/consolidate_bom.py --batch >> logs/bom.log 2>&1
+# Run
+python skill/bom-consolidation-wizard/scripts/consolidate_bom.py --batch
 
-# Result: Every day at 2am:
-# ✓ Detects new BOM files
-# ✓ Consolidates them
-# ✓ Generates change reports
-# ✓ Updates master & dashboard
-# ✓ Pushes to GitHub
-# ✓ Logs everything
+# Result: Master BOM updated, dashboard regenerated, GitHub pushed
 ```
 
-### Example 3: One-Time Consolidation from Scratch
-```
-User: "Consolidate all 19 BOMs from IREN, Anthropic, and NScale into a master file"
-
-Result:
-- 78 unique components organized by section
-- Metadata extracted from all files
-- Sections properly mapped
-- GitHub repo initialized with first commit
-- Interactive dashboard ready to share
-```
+### Method 3: Manual Update
+See [DASHBOARD_DATA_UPDATE.md](DASHBOARD_DATA_UPDATE.md) for manual refresh instructions.
 
 ---
 
-## 📞 Support & Documentation
+## 📖 Documentation
 
-**For help with a skill:**
+### For End Users
+- **[Dashboard Usage Guide](README_DASHBOARD.md)** - How to use filters, charts, export
+- **[Dashboard Quick Start](docs/dashboard/README.md)** - Features overview and common tasks
 
-1. **Read the skill's README** - Most common questions answered there
-2. **Check SKILL.md** - Detailed workflow and configuration
-3. **Review evals/** - See example test cases
-4. **Check logs/** - Review session logs for troubleshooting
+### For Administrators
+- **[GitHub Pages Setup](GITHUB_PAGES_SETUP.md)** - How to host and customize
+- **[Data Update Guide](DASHBOARD_DATA_UPDATE.md)** - How to refresh data
+- **[Skills Documentation](skill/README.md)** - How to use Claude skills for automation
+
+### For Developers
+- **[Skill Implementation](skill/bom-consolidation-wizard/SKILL.md)** - Complete skill definition
+- **[Skill Code](skill/bom-consolidation-wizard/scripts/consolidate_bom.py)** - Core engine
+- **[Data Structure](BOM_CONSOLIDATED_FINAL_WITH_SECTIONS.xlsx)** - Excel file with all data
+- **[Dashboard Code](BOM_Dashboard_Complete.html)** - Single-file HTML5 application
 
 ---
 
-## 🎯 Future Skills
+## 🛠️ Technical Stack
 
-This folder will expand to include additional skills such as:
-- [ ] BOM Validation & Quality Checker
-- [ ] Component Cost Analyzer
-- [ ] Supply Chain Risk Assessor
-- [ ] Inventory Optimizer
-- [ ] Compliance Validator
+### Frontend
+- **HTML5** - Modern web standards
+- **Chart.js** - Interactive data visualization
+- **JavaScript** - Client-side filtering and interactions
+- **CSS3** - Responsive design
+
+### Backend / Automation
+- **Python** - Data processing and orchestration
+- **openpyxl** - Excel file manipulation
+- **PyYAML** - Configuration management
+- **Git CLI** - Version control integration
+
+### Hosting
+- **GitHub Pages** - Free, automatic hosting
+- **Git** - Version control and collaboration
+
+---
+
+## 📤 Sharing with Team
+
+### Share the Dashboard Link
+```
+https://abdullahabuzaid2021.github.io/L11-BOM-Agent/dashboard/
+```
+
+### Via Email
+See [GITHUB_PAGES_SETUP.md - Sharing](GITHUB_PAGES_SETUP.md#-sharing-the-dashboard) for email template
+
+### Via Slack
+See [GITHUB_PAGES_SETUP.md - Sharing](GITHUB_PAGES_SETUP.md#in-slack) for Slack message template
+
+---
+
+## 🎯 Key Features
+
+### Dashboard
+- 📊 **4 Interactive Charts** - Visualize data by category, customer, location, component
+- 🔍 **Multi-dimensional Filtering** - Real-time updates
+- 📋 **Complete Data Table** - All 78 components with source details
+- 📥 **CSV Export** - Download for analysis
+- 📱 **Responsive Design** - Works on desktop, tablet, mobile
+
+### Master BOM
+- ✅ 78 unique components
+- ✅ Organized by 6 network sections
+- ✅ 19 source files tracked
+- ✅ Complete metadata (Model/PN, Description, NVIDIA PN, Dell PN)
+- ✅ Category classification
+- ✅ Total quantities per component
+
+### Automation (Skills)
+- ✅ **Interactive Consolidation** - Step-by-step guidance
+- ✅ **Batch Mode** - Scheduled/automated updates
+- ✅ **Smart File Detection** - Skip already-processed files
+- ✅ **Deduplication** - Intelligent matching algorithm
+- ✅ **Change Reports** - CSV & JSON documentation
+- ✅ **GitHub Integration** - Auto-commit with audit trail
+
+---
+
+## 🚀 Getting Started
+
+### Option 1: View Online (Recommended)
+1. Visit: https://abdullahabuzaid2021.github.io/L11-BOM-Agent/dashboard/
+2. No setup required
+3. Use filters and export as needed
+
+### Option 2: Local Setup with Skill
+1. Clone this repository
+2. Install Claude skill: `skill/bom-consolidation-wizard.skill`
+3. Use with Claude for interactive consolidations
+4. Or run batch mode: `python skill/bom-consolidation-wizard/scripts/consolidate_bom.py --batch`
+
+### Option 3: Manual Setup
+1. Download `BOM_CONSOLIDATED_FINAL_WITH_SECTIONS.xlsx`
+2. Download `BOM_Dashboard_Complete.html`
+3. Open HTML file in your browser
+4. Works offline
+
+---
+
+## ⚙️ System Requirements
+
+### Browser
+- Chrome/Edge (latest)
+- Firefox (latest)
+- Safari (latest)
+- Mobile browsers (iOS Safari, Android Chrome)
+
+### For Automation (Optional)
+- Python 3.7+
+- openpyxl, pyyaml libraries
+- Git (for auto-commit feature)
+
+---
+
+## 🔒 Privacy & Security
+
+### Data Handling
+- All dashboard data embedded in HTML file
+- No external API calls
+- No data transmission to servers
+- Works fully offline
+
+### GitHub Pages
+- Public repository (data is visible)
+- No authentication required
+- HTTPS enabled by default
+- All data is viewable in browser
+
+---
+
+## 📞 Support
+
+### Common Issues
+- **Charts not showing?** → Enable JavaScript
+- **Old data displayed?** → Clear browser cache (Ctrl+Shift+R)
+- **Mobile issues?** → Try landscape mode
+- **Skill not working?** → Check config file paths
+
+### Getting Help
+1. Check [Dashboard Usage Guide](README_DASHBOARD.md)
+2. Review [Skill Documentation](skill/bom-consolidation-wizard/README.md)
+3. See [GitHub Pages Setup](GITHUB_PAGES_SETUP.md) for hosting
+4. Contact repository maintainer
 
 ---
 
 ## 📝 Version History
 
-| Version | Date | Skill | Changes |
-|---------|------|-------|---------|
-| 1.0 | Oct 2026 | BOM Consolidation Wizard | Initial release with interactive & batch modes |
+| Version | Date | Changes |
+|---------|------|---------|
+| 1.1 | Oct 2026 | Added BOM Consolidation Wizard skill |
+| | | New features: batch mode, smart file detection, change reports |
+| | | Interactive consolidation with GitHub integration |
+| 1.0 | Oct 2026 | Initial release |
+| | | 78 components, 6 sections |
+| | | GitHub Pages hosting |
+| | | Interactive dashboard |
 
 ---
 
-## 🤝 Contributing
+## 👥 Contributors
 
-To add a new skill to this project:
-
-1. Create a folder: `skill/new-skill-name/`
-2. Add the skill structure: `SKILL.md`, `README.md`, `scripts/`, `references/`, `evals/`
-3. Document thoroughly in README.md
-4. Test with evals.json test cases
-5. Update this main README
+- **Abdullah Abuzaid** - Lead developer
+- **Anthropic Network Team** - Requirements & data
+- **Claude AI** - Tool development & skills
 
 ---
 
-**Questions?** See the specific skill's README or SKILL.md for detailed documentation.
+## 📄 License
+
+Internal use - Anthropic Network Infrastructure
+
+---
+
+## 🎯 Quick Links
+
+| What | Link |
+|------|------|
+| 🌐 Live Dashboard | https://abdullahabuzaid2021.github.io/L11-BOM-Agent/dashboard/ |
+| 🔄 BOM Consolidation Skill | `skill/bom-consolidation-wizard/` |
+| 📖 Skills Documentation | [skill/README.md](skill/README.md) |
+| 📊 Dashboard Usage | [README_DASHBOARD.md](README_DASHBOARD.md) |
+| 🛠️ Setup Guide | [GITHUB_PAGES_SETUP.md](GITHUB_PAGES_SETUP.md) |
+| 🔄 Data Update Guide | [DASHBOARD_DATA_UPDATE.md](DASHBOARD_DATA_UPDATE.md) |
+| 📊 Master BOM | [BOM_CONSOLIDATED_FINAL_WITH_SECTIONS.xlsx](BOM_CONSOLIDATED_FINAL_WITH_SECTIONS.xlsx) |
+
+---
+
+**Last Updated**: October 5, 2026  
+**Dashboard Status**: ✅ Production Ready  
+**Skill Status**: ✅ Production Ready  
+**Components**: 78  
+**Sections**: 6  
+**Source Files**: 19  
+
+**Questions?** See [skill/README.md](skill/README.md) for automation help or [README_DASHBOARD.md](README_DASHBOARD.md) for dashboard help.
