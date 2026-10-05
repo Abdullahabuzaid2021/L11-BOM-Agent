@@ -1,0 +1,26 @@
+{
+  "skill_name": "bom-consolidation-wizard",
+  "evals": [
+    {
+      "id": 1,
+      "name": "add-new-anthropic-boms",
+      "prompt": "We just got 3 new BOM files from Anthropic locations (Australia, Canada, US-Cluster1). They need to be consolidated into our master BOM with the existing IREN and NScale components. Can you help me consolidate them?",
+      "expected_output": "Interactive wizard that guides through 6 steps: (1) discovers the 3 Anthropic files, (2) extracts customer/location metadata, (3) maps sections, (4) identifies duplicates with existing ~78 components, (5) shows aggregation preview, (6) updates master BOM and pushes to GitHub",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "update-quantities-mackenzie",
+      "prompt": "The Mackenzie site sent updated quantities for their BOM. I need to update the existing Mackenzie_IREN.xlsx file in my master consolidation. The quantities changed but component names are the same.",
+      "expected_output": "Wizard reads updated file, matches existing components by Model/PN, updates quantities, regenerates dashboard with new totals, commits & pushes to GitHub with message about Mackenzie update",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "consolidate-from-scratch",
+      "prompt": "I'm starting fresh with a new BOM consolidation. I have 5 files from different suppliers (3 IREN, 2 Anthropic) in my BOMs folder. I need to consolidate them all into a master file with proper sections, deduplication, and metadata extraction.",
+      "expected_output": "Full wizard flow: discovers 5 files, extracts metadata from filenames, identifies sections in each file, deduplicates across all 5, aggregates to final master, creates initial GitHub commit with all components organized by section",
+      "files": []
+    }
+  ]
+}

@@ -1,0 +1,173 @@
+# BOM Consolidation Configuration
+# Used by the interactive wizard to guide consolidation process
+
+# ============ FILE LOCATIONS ============
+
+# Pattern to find source BOM files (glob format)
+source_bom_pattern: "BOMs/*.xlsx"
+
+# Master BOM file to update
+master_bom_file: "BOM_CONSOLIDATED_FINAL_WITH_SECTIONS.xlsx"
+
+# ============ COLUMN MAPPINGS ============
+# Which Excel columns contain which data (column letters A, B, C, etc.)
+
+column_mappings:
+  model_pn: "A"              # Model/Part Number
+  description: "B"           # Component description
+  nvidia_pn: "C"             # NVIDIA part number
+  dell_pn: "D"               # Dell part number
+  category: "E"              # Category (Switch, Transceiver, Cables, etc.)
+  section: "F"               # Network section (E-W, N-S, OOB, etc.)
+
+# ============ METADATA EXTRACTION ============
+# How to extract customer and location from filenames
+
+metadata:
+  # Filename pattern: IREN_Mackenzie.xlsx → customer=IREN, location=Mackenzie
+  pattern: "{customer}_{location}"
+
+  # List of known customers (for validation)
+  known_customers:
+    - IREN
+    - Anthropic
+    - NScale
+    - CTO
+
+  # If filename doesn't match pattern, look for metadata in Excel
+  fallback_sheet: "Sheet1"
+  fallback_customer_cell: "B2"    # Usually row 2 has metadata
+  fallback_location_cell: "B3"
+
+# ============ SECTION MAPPING ============
+# Rules for mapping section names from source files to unified names
+
+section_mappings:
+  # Scale Out Networking
+  "Scale Out": "Scale Out Networking"
+  "Scale Out RoCE": "Scale Out Networking"
+  "Scale Out RoCE - Network BOM": "Scale Out Networking"
+  "Scalable": "Scale Out Networking"
+
+  # E-W (East-West) Networking
+  "E-W": "E-W Networking"
+  "East-West": "E-W Networking"
+  "E-W Switches": "E-W Networking"
+  "E-W LEAF": "E-W Networking"
+  "E-W Transceiver": "E-W Networking"
+
+  # N-S (North-South) Networking
+  "N-S": "N-S Networking"
+  "North-South": "N-S Networking"
+  "N-S Switches": "N-S Networking"
+  "N-S SPINE": "N-S Networking"
+  "N-S Transceiver": "N-S Networking"
+  "N-S Storage": "N-S Networking"
+  "N-S Control": "N-S Networking"
+
+  # OOB (Out of Band) Networking
+  "OOB": "OOB Networking"
+  "OOB Switches": "OOB Networking"
+  "OOB Cluster": "OOB Networking"
+  "OOB - Network BOM": "OOB Networking"
+  "Border Leaf": "OOB Networking"
+
+  # Racks, PDUs, CDUs
+  "Racks": "Racks, PDUs, CDUs"
+  "Rack": "Racks, PDUs, CDUs"
+  "PDU": "Racks, PDUs, CDUs"
+  "CDU": "Racks, PDUs, CDUs"
+  "Power Distribution": "Racks, PDUs, CDUs"
+  "IR": "Racks, PDUs, CDUs"
+
+  # Patch Panels / Shuffle
+  "Panels": "Patch Panels/Shuffle"
+  "Panel": "Patch Panels/Shuffle"
+  "Patch": "Patch Panels/Shuffle"
+  "Shuffle": "Patch Panels/Shuffle"
+  "Cassette": "Patch Panels/Shuffle"
+
+# ============ DEDUPLICATION RULES ============
+
+deduplication:
+  # Fields to match on for identifying duplicates
+  match_fields:
+    - model_pn          # Highest priority
+    - description       # Secondary match
+    - nvidia_pn         # Tertiary
+
+  # Confidence threshold for auto-deduplication (0-100)
+  # Below this, wizard will prompt user for confirmation
+  auto_threshold: 90
+
+  # Action when duplicates found
+  action: "sum_quantities"    # Sum existing + new quantities
+
+# ============ GITHUB INTEGRATION ============
+
+github:
+  # Path to git repository
+  repo_path: "./L11-BOM-Agent"
+
+  # Commit message template
+  # Available variables: {files_count}, {timestamp}, {new_components}, {updated_components}
+  commit_message_template: "BOM: Consolidate {files_count} file(s) - {timestamp}"
+
+  # Automatically push to remote after commit
+  auto_push: true
+
+  # Create git tag for major updates (optional)
+  create_tag: false
+  tag_format: "bom-v{date}"
+
+# ============ DASHBOARD REGENERATION ============
+
+dashboard:
+  # Whether to regenerate HTML dashboard after consolidation
+  regenerate: true
+
+  # Input: consolidated data (Excel file)
+  input_file: "BOM_CONSOLIDATED_FINAL_WITH_SECTIONS.xlsx"
+
+  # Output: interactive HTML dashboard
+  output_file: "BOM_Dashboard_Complete.html"
+
+  # Script to regenerate dashboard (if needed)
+  regeneration_script: "scripts/regenerate_dashboard.py"
+
+# ============ WIZARD BEHAVIOR ============
+
+wizard:
+  # Show detailed preview at each step
+  verbose: true
+
+  # Require user confirmation before each major action
+  interactive: true
+
+  # Create backup before updating master BOM
+  backup: true
+  backup_folder: "backups/"
+
+  # Log all consolidation sessions
+  logging: true
+  log_folder: "logs/"
+
+  # Timeout for git operations (seconds)
+  git_timeout: 30
+
+# ============ OUTPUT OPTIONS ============
+
+output:
+  # Where to save session logs
+  session_logs: "logs/consolidation_sessions.json"
+
+  # Generate audit trail of all deduplication decisions
+  generate_audit_trail: true
+  audit_trail_file: "CONSOLIDATION_AUDIT_{timestamp}.csv"
+
+  # Export reference list (source file to component mapping)
+  generate_reference_list: true
+  reference_list_file: "REFERENCE_LIST_{timestamp}.csv"
+
+  # Show final summary
+  show_summary: true
