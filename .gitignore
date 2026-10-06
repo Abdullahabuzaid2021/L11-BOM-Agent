@@ -46,5 +46,6 @@ BOM_INBOX/logs/*
 references/backups/*
 *.xlsx
 !Dell Networking components list details WO Pricing.xlsx
+!BOM_CONSOLIDATED_FINAL_WITH_SECTIONS.xlsx
 .env
 credentials.json
