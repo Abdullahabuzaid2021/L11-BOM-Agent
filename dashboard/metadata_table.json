@@ -1,0 +1,204 @@
+{
+  "headers": [
+    "BOM File Name",
+    "Customer",
+    "Location",
+    "# of Buildings",
+    "Focus ID",
+    "SFDC ID",
+    "Target Start Date",
+    "Target End Date"
+  ],
+  "rows": [
+    [
+      "BOM - NETWORK - 2026-08-24- IREN -  512 Racks -(B300) - Mackenzie - 512 GPU Storage Testing [Locked]_UNLOCKED.xlsx",
+      "IREN",
+      "Childress, Tx",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    [
+      "BOM - NETWORK - 2026-09-023 - IREN -  256 Racks - 8192-GPU (B300)_GOLDEN.xlsx",
+      "IREN",
+      "Childress, Tx",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    [
+      "BOM - NETWORK - 2026-09-04- IREN - PS - VR72 4x Test Racks [Quote]_UNLOCKED.xlsx",
+      "IREN",
+      "Prince George",
+      "",
+      "FOCUS-2657",
+      "31064701",
+      "2026-01-28",
+      "2026-11-01"
+    ],
+    [
+      "BOM - NETWORK - 2026-09-11- IREN - 50MW 252 Racks - Sweetwater VR NVL72_SN6600-LD_CORE [Quoted]_UNLOCKED.xlsx",
+      "IREN",
+      "Sweetwater",
+      "",
+      "FOCUS-2586",
+      "32103315",
+      "2026-06-05",
+      "2026-11-01"
+    ],
+    [
+      "BOM - NETWORK - 2026-09-11- IREN - 50MW 252 Racks - Sweetwater VR NVL72_SN6600-LD_DH [Quoted]_UNLOCKED.xlsx",
+      "IREN",
+      "Sweetwater",
+      "",
+      "FOCUS-2586",
+      "32103315",
+      "2026-06-05",
+      "2026-11-01"
+    ],
+    [
+      "BOM - NETWORK - 2026-09-15- IREN CHLD_HORIZON_210 Racks - VR NVL72_SN6600-LD_Core-GOLDEN [Quoting]_UNLOCKED.xlsx",
+      "IREN",
+      "Childress, Tx",
+      "",
+      "FOCUS-2587",
+      "32109457",
+      "2026-06-05",
+      "2026-11-01"
+    ],
+    [
+      "BOM - NETWORK - 2026-09-15- IREN CHLD_HORIZON_210 Racks - VR NVL72_SN6600-LD_DH_GOLDEN [Quoting]_UNLOCKED.xlsx",
+      "IREN",
+      "Childress, Tx",
+      "",
+      "FOCUS-2587",
+      "32109457",
+      "2026-06-05",
+      "2026-11-01"
+    ],
+    [
+      "BOM - NETWORK - 2026-09-23 - IREN -  256 Racks - 8192-GPU (B200).xlsx",
+      "IREN",
+      "Childress, Tx",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    [
+      "BOM - NETWORK - 2026-09-23 - IREN -  B4-5 256 Racks - 8192-GPU (B200).xlsx",
+      "IREN",
+      "Childress, Tx",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    [
+      "PNL-NETWORK BOM-2026-09-23-Anthropic-Australia_Q1_Q2-21k GPUs VR NVL72.xlsx",
+      "Anthropic",
+      "Australia",
+      "",
+      "FOCUS-2116",
+      "",
+      "2027-02-07",
+      "2027-07-31"
+    ],
+    [
+      "PNL-NETWORK BOM-2026-09-23-Anthropic-Canada_Q2-32k GPUs VR NVL72.xlsx",
+      "Anthropic",
+      "Canada",
+      "",
+      "FOCUS-2116",
+      "",
+      "2027-02-07",
+      "2027-07-31"
+    ],
+    [
+      "PNL-NETWORK BOM-2026-09-24-Anthropic-US-Q1-Q2-Cluster1-129k GPUs VR NVL72.xlsx",
+      "Anthropic",
+      "US-Cluster1",
+      "",
+      "FOCUS-2116",
+      "",
+      "2027-02-07",
+      "2027-07-31"
+    ],
+    [
+      "PNL-NETWORK BOM-2026-09-24-Anthropic-US-Q1-Q2-Cluster2-129k GPUs VR NVL72.xlsx",
+      "Anthropic",
+      "US-Cluster2",
+      "",
+      "FOCUS-2116",
+      "",
+      "2027-02-07",
+      "2027-07-31"
+    ],
+    [
+      "PNL-NETWORK BOM-2026-09-25-Anthropic-US_Q1_Q2-Cluster3-9k GPUs VR NVL72.xlsx",
+      "Anthropic",
+      "US-Cluster3",
+      "",
+      "FOCUS-2116",
+      "",
+      "2027-02-07",
+      "2027-07-31"
+    ],
+    [
+      "NScale - NETWORK BOM - Narvik-8k-6810.xlsx",
+      "NScale",
+      "Narvik-8k-6810",
+      "",
+      "FOCUS-1364",
+      "",
+      "2027-03-31",
+      "2027-03-31"
+    ],
+    [
+      "NScale - NETWORK BOM - Narvik-8k-6810.xlsx",
+      "NScale",
+      "Narvik-8k-6810",
+      "",
+      "FOCUS-1364",
+      "",
+      "2027-03-31",
+      "2027-03-31"
+    ],
+    [
+      "NScale - NETWORK BOM - Narvik-8k.xlsx",
+      "NScale",
+      "Narvik-8k",
+      "",
+      "FOCUS-1364",
+      "",
+      "2027-03-31",
+      "2027-03-31"
+    ],
+    [
+      "NScale - NETWORK BOM - Narvik-17k.xlsx",
+      "NScale",
+      "Narvik-17k",
+      "",
+      "FOCUS-1364",
+      "",
+      "2027-03-31",
+      "2027-03-31"
+    ],
+    [
+      "NScale - NETWORK BOM - US-TBD-18k.xlsx",
+      "NScale",
+      "US-TBD-18k",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  ]
+}

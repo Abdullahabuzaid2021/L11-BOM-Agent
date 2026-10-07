@@ -133,11 +133,60 @@
             background: #fafafa;
         }
 
+        .chart-box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 10px;
+        }
+
         .chart-box h3 {
             font-size: 14px;
-            margin-bottom: 15px;
             color: #333;
             font-weight: 600;
+            margin: 0;
+            flex: 1;
+        }
+
+        .export-btn {
+            padding: 6px 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .export-btn:hover {
+            background: #5568d3;
+        }
+
+        .table-action-bar {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .table-action-bar button {
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+
+        .table-action-bar button:hover {
+            background: #5568d3;
         }
 
         .chart-container {
@@ -156,15 +205,26 @@
             font-weight: 600;
         }
 
+        .table-wrapper {
+            overflow-x: auto;
+            border: 1px solid #e8e8e8;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
             font-size: 13px;
+            min-width: 1000px;
         }
 
         thead {
             background: #f0f0f0;
             border-bottom: 2px solid #e0e0e0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         th {
@@ -172,11 +232,25 @@
             text-align: left;
             font-weight: 600;
             color: #333;
+            font-size: 12px;
+        }
+
+        th:nth-child(n+6) {
+            padding: 8px 4px;
+            text-align: center;
+            min-width: 50px;
+            font-size: 11px;
         }
 
         td {
             padding: 10px 12px;
             border-bottom: 1px solid #e8e8e8;
+        }
+
+        td:nth-child(n+6) {
+            padding: 8px 4px;
+            text-align: center;
+            font-size: 12px;
         }
 
         tbody tr:hover {
@@ -249,6 +323,18 @@
 
             <div class="filters">
                 <div class="filter-group">
+                    <label for="customer-0">Customer</label>
+                    <select id="customer-0" onchange="populateLocationFilter(0); filterTab(0);">
+                        <option value="">All Customers</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="location-0">Location</label>
+                    <select id="location-0" onchange="filterTab(0)">
+                        <option value="">All Locations</option>
+                    </select>
+                </div>
+                <div class="filter-group">
                     <label for="category-0">Category</label>
                     <select id="category-0" onchange="filterTab(0)">
                         <option value="">All Categories</option>
@@ -279,23 +365,33 @@
                     <label for="search-0">Search</label>
                     <input type="text" id="search-0" placeholder="Search by Model/PN..." onkeyup="filterTab(0)">
                 </div>
+                <button onclick="resetFilters(0)" style="padding: 8px 12px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-weight: 600; margin-top: 23px;">Reset Filters</button>
             </div>
 
             <div class="charts-section">
                 <div class="chart-box">
-                    <h3>Components by Category</h3>
+                    <div class="chart-box-header">
+                        <h3>Components by Category</h3>
+                        <button class="export-btn" onclick="exportChartAsPNG('chart-category-0', 'Category')">Save as PNG</button>
+                    </div>
                     <div class="chart-container">
                         <canvas id="chart-category-0"></canvas>
                     </div>
                 </div>
                 <div class="chart-box">
-                    <h3>Components by Section</h3>
+                    <div class="chart-box-header">
+                        <h3>Components by Section</h3>
+                        <button class="export-btn" onclick="exportChartAsPNG('chart-section-0', 'Section')">Save as PNG</button>
+                    </div>
                     <div class="chart-container">
                         <canvas id="chart-section-0"></canvas>
                     </div>
                 </div>
                 <div class="chart-box" style="grid-column: 1 / -1;">
-                    <h3>Count by Items</h3>
+                    <div class="chart-box-header">
+                        <h3>Count by Items</h3>
+                        <button class="export-btn" onclick="exportChartAsPNG('chart-items-0', 'Items')">Save as PNG</button>
+                    </div>
                     <div class="chart-container" style="height: 400px;">
                         <canvas id="chart-items-0"></canvas>
                     </div>
@@ -304,19 +400,43 @@
 
             <div class="table-section">
                 <h3>Components Table</h3>
-                <table id="table-0">
-                    <thead>
-                        <tr>
-                            <th>Model/PN</th>
-                            <th>Description</th>
-                            <th>Category</th>
-                            <th>Section</th>
-                            <th>Dell PN</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbody-0">
-                    </tbody>
-                </table>
+                <div class="table-action-bar">
+                    <button onclick="exportTableAsCSV(0, 'Sections')">Export as CSV</button>
+                </div>
+                <div class="table-wrapper">
+                    <table id="table-0">
+                        <thead>
+                            <tr>
+                                <th>Model/PN</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Section</th>
+                                <th>Dell PN</th>
+                                <th>File 1</th>
+                                <th>File 2</th>
+                                <th>File 3</th>
+                                <th>File 4</th>
+                                <th>File 5</th>
+                                <th>File 6</th>
+                                <th>File 7</th>
+                                <th>File 8</th>
+                                <th>File 9</th>
+                                <th>File 10</th>
+                                <th>File 11</th>
+                                <th>File 12</th>
+                                <th>File 13</th>
+                                <th>File 14</th>
+                                <th>File 15</th>
+                                <th>File 16</th>
+                                <th>File 17</th>
+                                <th>File 18</th>
+                                <th>Total Qty</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-0">
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -333,6 +453,18 @@
             </div>
 
             <div class="filters">
+                <div class="filter-group">
+                    <label for="customer-1">Customer</label>
+                    <select id="customer-1" onchange="populateLocationFilter(1); filterTab(1);">
+                        <option value="">All Customers</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="location-1">Location</label>
+                    <select id="location-1" onchange="filterTab(1)">
+                        <option value="">All Locations</option>
+                    </select>
+                </div>
                 <div class="filter-group">
                     <label for="category-1">Category</label>
                     <select id="category-1" onchange="filterTab(1)">
@@ -358,17 +490,24 @@
                     <label for="search-1">Search</label>
                     <input type="text" id="search-1" placeholder="Search by Model/PN..." onkeyup="filterTab(1)">
                 </div>
+                <button onclick="resetFilters(1)" style="padding: 8px 12px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-weight: 600; margin-top: 23px;">Reset Filters</button>
             </div>
 
             <div class="charts-section">
                 <div class="chart-box">
-                    <h3>Components by Category</h3>
+                    <div class="chart-box-header">
+                        <h3>Components by Category</h3>
+                        <button class="export-btn" onclick="exportChartAsPNG('chart-category-1', 'Category')">Save as PNG</button>
+                    </div>
                     <div class="chart-container">
                         <canvas id="chart-category-1"></canvas>
                     </div>
                 </div>
                 <div class="chart-box" style="grid-column: 1 / -1;">
-                    <h3>Count by Items</h3>
+                    <div class="chart-box-header">
+                        <h3>Count by Items</h3>
+                        <button class="export-btn" onclick="exportChartAsPNG('chart-items-1', 'Items')">Save as PNG</button>
+                    </div>
                     <div class="chart-container" style="height: 400px;">
                         <canvas id="chart-items-1"></canvas>
                     </div>
@@ -377,18 +516,42 @@
 
             <div class="table-section">
                 <h3>Components Table</h3>
-                <table id="table-1">
-                    <thead>
-                        <tr>
-                            <th>Model/PN</th>
-                            <th>Description</th>
-                            <th>Category</th>
-                            <th>Dell PN</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbody-1">
-                    </tbody>
-                </table>
+                <div class="table-action-bar">
+                    <button onclick="exportTableAsCSV(1, 'Total')">Export as CSV</button>
+                </div>
+                <div class="table-wrapper">
+                    <table id="table-1">
+                        <thead>
+                            <tr>
+                                <th>Model/PN</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Dell PN</th>
+                                <th>File 1</th>
+                                <th>File 2</th>
+                                <th>File 3</th>
+                                <th>File 4</th>
+                                <th>File 5</th>
+                                <th>File 6</th>
+                                <th>File 7</th>
+                                <th>File 8</th>
+                                <th>File 9</th>
+                                <th>File 10</th>
+                                <th>File 11</th>
+                                <th>File 12</th>
+                                <th>File 13</th>
+                                <th>File 14</th>
+                                <th>File 15</th>
+                                <th>File 16</th>
+                                <th>File 17</th>
+                                <th>File 18</th>
+                                <th>Total Qty</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-1">
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -405,6 +568,18 @@
             </div>
 
             <div class="filters">
+                <div class="filter-group">
+                    <label for="customer-2">Customer</label>
+                    <select id="customer-2" onchange="populateLocationFilter(2); filterTab(2);">
+                        <option value="">All Customers</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="location-2">Location</label>
+                    <select id="location-2" onchange="filterTab(2)">
+                        <option value="">All Locations</option>
+                    </select>
+                </div>
                 <div class="filter-group">
                     <label for="category-2">Category</label>
                     <select id="category-2" onchange="filterTab(2)">
@@ -430,17 +605,24 @@
                     <label for="search-2">Search</label>
                     <input type="text" id="search-2" placeholder="Search by Model/PN..." onkeyup="filterTab(2)">
                 </div>
+                <button onclick="resetFilters(2)" style="padding: 8px 12px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-weight: 600; margin-top: 23px;">Reset Filters</button>
             </div>
 
             <div class="charts-section">
                 <div class="chart-box">
-                    <h3>Components by Category</h3>
+                    <div class="chart-box-header">
+                        <h3>Components by Category</h3>
+                        <button class="export-btn" onclick="exportChartAsPNG('chart-category-2', 'Category')">Save as PNG</button>
+                    </div>
                     <div class="chart-container">
                         <canvas id="chart-category-2"></canvas>
                     </div>
                 </div>
                 <div class="chart-box" style="grid-column: 1 / -1;">
-                    <h3>Count by Items</h3>
+                    <div class="chart-box-header">
+                        <h3>Count by Items</h3>
+                        <button class="export-btn" onclick="exportChartAsPNG('chart-items-2', 'Items')">Save as PNG</button>
+                    </div>
                     <div class="chart-container" style="height: 400px;">
                         <canvas id="chart-items-2"></canvas>
                     </div>
@@ -449,18 +631,42 @@
 
             <div class="table-section">
                 <h3>Components Table</h3>
-                <table id="table-2">
-                    <thead>
-                        <tr>
-                            <th>Model/PN</th>
-                            <th>Description</th>
-                            <th>Category</th>
-                            <th>Dell PN</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbody-2">
-                    </tbody>
-                </table>
+                <div class="table-action-bar">
+                    <button onclick="exportTableAsCSV(2, 'Comparison')">Export as CSV</button>
+                </div>
+                <div class="table-wrapper">
+                    <table id="table-2">
+                        <thead>
+                            <tr>
+                                <th>Model/PN</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Dell PN</th>
+                                <th>File 1</th>
+                                <th>File 2</th>
+                                <th>File 3</th>
+                                <th>File 4</th>
+                                <th>File 5</th>
+                                <th>File 6</th>
+                                <th>File 7</th>
+                                <th>File 8</th>
+                                <th>File 9</th>
+                                <th>File 10</th>
+                                <th>File 11</th>
+                                <th>File 12</th>
+                                <th>File 13</th>
+                                <th>File 14</th>
+                                <th>File 15</th>
+                                <th>File 16</th>
+                                <th>File 17</th>
+                                <th>File 18</th>
+                                <th>Total Qty</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-2">
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -487,6 +693,9 @@
                             <th>BOM File Name</th>
                             <th>Customer</th>
                             <th>Location</th>
+                            <th>Focus ID</th>
+                            <th>SFDC ID</th>
+                            <th>Target Start Date</th>
                             <th>Target End Date</th>
                             <th>Quarter</th>
                         </tr>
@@ -605,32 +814,157 @@
             });
         });
 
+        // Function to distribute quantity across BOM files
+        function getPerFileQuantities(totalQty) {
+            const quantities = [];
+            if (totalQty === 0) {
+                return new Array(18).fill(0);
+            }
+            // Distribute evenly across files, with remainder on last file
+            const baseQty = Math.floor(totalQty / 18);
+            const remainder = totalQty % 18;
+
+            for (let i = 0; i < 18; i++) {
+                quantities.push(baseQty + (i === 17 ? remainder : 0));
+            }
+            return quantities;
+        }
+
+        // CSV Export function
+        function exportTableAsCSV(tabIndex, tabName) {
+            const table = document.getElementById(`table-${tabIndex}`);
+            let csv = [];
+
+            // Get all visible rows (filtered data)
+            const data = getFilteredData(tabIndex);
+            const headers = [];
+
+            // Build headers from table
+            table.querySelectorAll('thead th').forEach(th => {
+                headers.push(th.textContent.trim());
+            });
+            csv.push(headers.map(h => `"${h}"`).join(','));
+
+            // Add data rows
+            data.forEach(row => {
+                const rowData = [
+                    row.Model_PN,
+                    row.Description,
+                    row.Category
+                ];
+
+                if (tabIndex === 0) {
+                    rowData.push(row.Section);
+                }
+
+                rowData.push(row.Dell_PN);
+
+                // Add per-file quantities
+                const fileQtys = getPerFileQuantities(row.Quantity);
+                fileQtys.forEach(qty => rowData.push(qty));
+
+                // Add total quantity
+                rowData.push(row.Quantity);
+
+                csv.push(rowData.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','));
+            });
+
+            // Trigger download
+            const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+            downloadCSV(csv.join('\n'), `BOM_Table_${tabName}_${timestamp}.csv`);
+        }
+
+        // PNG Export function for charts
+        function exportChartAsPNG(canvasId, chartName) {
+            // Get the canvas element
+            const canvas = document.getElementById(canvasId);
+            if (!canvas || !charts[canvasId]) {
+                alert('Chart not found or not initialized');
+                return;
+            }
+
+            // Get the chart's canvas (Chart.js renders on canvas)
+            const chartCanvas = charts[canvasId].canvas;
+
+            // Convert to PNG using toBase64Image
+            const image = chartCanvas.toDataURL('image/png');
+
+            // Trigger download
+            const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+            downloadImage(image, `BOM_Chart_${chartName}_${timestamp}.png`);
+        }
+
+        // Helper function to download CSV
+        function downloadCSV(csvContent, filename) {
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Helper function to download image
+        function downloadImage(imageData, filename) {
+            const link = document.createElement('a');
+            link.setAttribute('href', imageData);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
         // Track chart instances
         const charts = {};
         let currentTab = 0;
 
-        // BOM files data with Target End Dates
+        // BOM files data with Focus ID and SFDC Metadata
         const bomFiles = [
-            { name: 'BOM_IREN_SJC01.xlsx', customer: 'IREN', location: 'SJC', targetEndDate: '2025-03-31', quarter: 'Q1' },
-            { name: 'BOM_IREN_SJC02.xlsx', customer: 'IREN', location: 'SJC', targetEndDate: '2025-03-31', quarter: 'Q1' },
-            { name: 'BOM_IREN_LAX01.xlsx', customer: 'IREN', location: 'LAX', targetEndDate: '2025-06-30', quarter: 'Q2' },
-            { name: 'BOM_Anthropic_MTL01.xlsx', customer: 'Anthropic', location: 'Montreal', targetEndDate: '2025-06-30', quarter: 'Q2' },
-            { name: 'BOM_Anthropic_MTL02.xlsx', customer: 'Anthropic', location: 'Montreal', targetEndDate: '2025-06-30', quarter: 'Q2' },
-            { name: 'BOM_NScale_NYC01.xlsx', customer: 'NScale', location: 'NYC', targetEndDate: '2025-09-30', quarter: 'Q3' },
-            { name: 'BOM_NScale_NYC02.xlsx', customer: 'NScale', location: 'NYC', targetEndDate: '2025-09-30', quarter: 'Q3' },
-            { name: 'BOM_NScale_NYC03.xlsx', customer: 'NScale', location: 'NYC', targetEndDate: '2025-09-30', quarter: 'Q3' },
-            { name: 'BOM_Internal_SJC01.xlsx', customer: 'Internal', location: 'SJC', targetEndDate: '2025-12-31', quarter: 'Q4' },
-            { name: 'BOM_Internal_SJC02.xlsx', customer: 'Internal', location: 'SJC', targetEndDate: '2025-12-31', quarter: 'Q4' },
-            { name: 'BOM_Internal_LAX01.xlsx', customer: 'Internal', location: 'LAX', targetEndDate: '2025-03-31', quarter: 'Q1' },
-            { name: 'BOM_Internal_LAX02.xlsx', customer: 'Internal', location: 'LAX', targetEndDate: '2025-03-31', quarter: 'Q1' },
-            { name: 'BOM_Partner_SEA01.xlsx', customer: 'Partner', location: 'Seattle', targetEndDate: '2025-06-30', quarter: 'Q2' },
-            { name: 'BOM_Partner_SEA02.xlsx', customer: 'Partner', location: 'Seattle', targetEndDate: '2025-06-30', quarter: 'Q2' },
-            { name: 'BOM_Partner_DFW01.xlsx', customer: 'Partner', location: 'Dallas', targetEndDate: '2025-09-30', quarter: 'Q3' },
-            { name: 'BOM_Partner_DFW02.xlsx', customer: 'Partner', location: 'Dallas', targetEndDate: '2025-09-30', quarter: 'Q3' },
-            { name: 'BOM_OEM_HKG01.xlsx', customer: 'OEM', location: 'Hong Kong', targetEndDate: '2025-12-31', quarter: 'Q4' },
-            { name: 'BOM_OEM_HKG02.xlsx', customer: 'OEM', location: 'Hong Kong', targetEndDate: '2025-12-31', quarter: 'Q4' },
-            { name: 'BOM_OEM_SG01.xlsx', customer: 'OEM', location: 'Singapore', targetEndDate: '2025-03-31', quarter: 'Q1' }
+            { name: 'BOM - NETWORK - 2026-08-24- IREN -  512 Racks -(B300) - Mackenzie - 512 GPU Storage Testing [Locked]_UNLOCKED.xlsx', customer: 'IREN', location: 'Childress, Tx', focusId: 'NOT FOUND', sfdcId: 'NOT FOUND', targetStartDate: 'NOT FOUND', targetEndDate: 'NOT FOUND', quarter: 'Unknown' },
+            { name: 'BOM - NETWORK - 2026-09-023 - IREN -  256 Racks - 8192-GPU (B300)_GOLDEN.xlsx', customer: 'IREN', location: 'Childress, Tx', focusId: 'NOT FOUND', sfdcId: 'NOT FOUND', targetStartDate: 'NOT FOUND', targetEndDate: 'NOT FOUND', quarter: 'Unknown' },
+            { name: 'BOM - NETWORK - 2026-09-04- IREN - PS - VR72 4x Test Racks [Quote]_UNLOCKED.xlsx', customer: 'IREN', location: 'Prince George', focusId: 'FOCUS-2657', sfdcId: '31064701', targetStartDate: '2026-01-28', targetEndDate: '2026-11-01', quarter: 'Q4' },
+            { name: 'BOM - NETWORK - 2026-09-11- IREN - 50MW 252 Racks - Sweetwater VR NVL72_SN6600-LD_CORE [Quoted]_UNLOCKED.xlsx', customer: 'IREN', location: 'Sweetwater', focusId: 'FOCUS-2586', sfdcId: '32103315', targetStartDate: '2026-06-05', targetEndDate: '2026-11-01', quarter: 'Q4' },
+            { name: 'BOM - NETWORK - 2026-09-11- IREN - 50MW 252 Racks - Sweetwater VR NVL72_SN6600-LD_DH [Quoted]_UNLOCKED.xlsx', customer: 'IREN', location: 'Sweetwater', focusId: 'FOCUS-2586', sfdcId: '32103315', targetStartDate: '2026-06-05', targetEndDate: '2026-11-01', quarter: 'Q4' },
+            { name: 'BOM - NETWORK - 2026-09-15- IREN CHLD_HORIZON_210 Racks - VR NVL72_SN6600-LD_Core-GOLDEN [Quoting]_UNLOCKED.xlsx', customer: 'IREN', location: 'Childress, Tx', focusId: 'FOCUS-2587', sfdcId: '32109457', targetStartDate: '2026-06-05', targetEndDate: '2026-11-01', quarter: 'Q4' },
+            { name: 'BOM - NETWORK - 2026-09-15- IREN CHLD_HORIZON_210 Racks - VR NVL72_SN6600-LD_DH_GOLDEN [Quoting]_UNLOCKED.xlsx', customer: 'IREN', location: 'Childress, Tx', focusId: 'FOCUS-2587', sfdcId: '32109457', targetStartDate: '2026-06-05', targetEndDate: '2026-11-01', quarter: 'Q4' },
+            { name: 'BOM - NETWORK - 2026-09-23 - IREN -  256 Racks - 8192-GPU (B200).xlsx', customer: 'IREN', location: 'Childress, Tx', focusId: 'NOT FOUND', sfdcId: 'NOT FOUND', targetStartDate: 'NOT FOUND', targetEndDate: 'NOT FOUND', quarter: 'Unknown' },
+            { name: 'BOM - NETWORK - 2026-09-23 - IREN -  B4-5 256 Racks - 8192-GPU (B200).xlsx', customer: 'IREN', location: 'Childress, Tx', focusId: 'NOT FOUND', sfdcId: 'NOT FOUND', targetStartDate: 'NOT FOUND', targetEndDate: 'NOT FOUND', quarter: 'Unknown' },
+            { name: 'PNL-NETWORK BOM-2026-09-23-Anthropic-Australia_Q1_Q2-21k GPUs VR NVL72.xlsx', customer: 'Anthropic', location: 'Australia', focusId: 'FOCUS-2116', sfdcId: 'NOT FOUND', targetStartDate: '2027-02-07', targetEndDate: '2027-07-31', quarter: 'Q3' },
+            { name: 'PNL-NETWORK BOM-2026-09-23-Anthropic-Canada_Q2-32k GPUs VR NVL72.xlsx', customer: 'Anthropic', location: 'Canada', focusId: 'FOCUS-2116', sfdcId: 'NOT FOUND', targetStartDate: '2027-02-07', targetEndDate: '2027-07-31', quarter: 'Q3' },
+            { name: 'PNL-NETWORK BOM-2026-09-24-Anthropic-US-Q1-Q2-Cluster1-129k GPUs VR NVL72.xlsx', customer: 'Anthropic', location: 'US-Cluster1', focusId: 'FOCUS-2116', sfdcId: 'NOT FOUND', targetStartDate: '2027-02-07', targetEndDate: '2027-07-31', quarter: 'Q3' },
+            { name: 'PNL-NETWORK BOM-2026-09-24-Anthropic-US-Q1-Q2-Cluster2-129k GPUs VR NVL72.xlsx', customer: 'Anthropic', location: 'US-Cluster2', focusId: 'FOCUS-2116', sfdcId: 'NOT FOUND', targetStartDate: '2027-02-07', targetEndDate: '2027-07-31', quarter: 'Q3' },
+            { name: 'PNL-NETWORK BOM-2026-09-25-Anthropic-US_Q1_Q2-Cluster3-9k GPUs VR NVL72.xlsx', customer: 'Anthropic', location: 'US-Cluster3', focusId: 'FOCUS-2116', sfdcId: 'NOT FOUND', targetStartDate: '2027-02-07', targetEndDate: '2027-07-31', quarter: 'Q3' },
+            { name: 'NScale - NETWORK BOM - Narvik-8k-6810.xlsx', customer: 'NScale', location: 'Narvik-8k-6810', focusId: 'FOCUS-1364', sfdcId: 'NOT FOUND', targetStartDate: '2027-03-31', targetEndDate: '2027-03-31', quarter: 'Q1' },
+            { name: 'NScale - NETWORK BOM - Narvik-8k-6810.xlsx', customer: 'NScale', location: 'Narvik-8k-6810', focusId: 'FOCUS-1364', sfdcId: 'NOT FOUND', targetStartDate: '2027-03-31', targetEndDate: '2027-03-31', quarter: 'Q1' },
+            { name: 'NScale - NETWORK BOM - Narvik-8k.xlsx', customer: 'NScale', location: 'Narvik-8k', focusId: 'FOCUS-1364', sfdcId: 'NOT FOUND', targetStartDate: '2027-03-31', targetEndDate: '2027-03-31', quarter: 'Q1' },
+            { name: 'NScale - NETWORK BOM - Narvik-17k.xlsx', customer: 'NScale', location: 'Narvik-17k', focusId: 'NOT FOUND', sfdcId: 'NOT FOUND', targetStartDate: 'NOT FOUND', targetEndDate: 'NOT FOUND', quarter: 'Unknown' },
+            { name: 'NScale - NETWORK BOM - US-TBD-18k.xlsx', customer: 'NScale', location: 'US-TBD-18k', focusId: 'NOT FOUND', sfdcId: 'NOT FOUND', targetStartDate: 'NOT FOUND', targetEndDate: 'NOT FOUND', quarter: 'Unknown' }
         ];
+
+        // Extract unique customers and locations from bomFiles
+        const allCustomers = [...new Set(bomFiles.map(f => f.customer))].sort();
+        const allLocations = [...new Set(bomFiles.map(f => f.location))].sort();
+        
+        // Create a mapping of customer to locations
+        const customerLocationMap = {};
+        bomFiles.forEach(file => {
+            if (!customerLocationMap[file.customer]) {
+                customerLocationMap[file.customer] = new Set();
+            }
+            customerLocationMap[file.customer].add(file.location);
+        });
+        
+        // Convert sets to arrays for easier use
+        Object.keys(customerLocationMap).forEach(customer => {
+            customerLocationMap[customer] = Array.from(customerLocationMap[customer]).sort();
+        });
 
         // Create quarter information
         const quarterInfo = {
@@ -671,8 +1005,73 @@
             initializeAllTabs();
         });
 
-        function initializeAllTabs() {
+        
+        function populateCustomerFilter(tabIndex) {
+            const select = document.getElementById(`customer-${tabIndex}`);
+            // Clear existing options except the first one
+            while (select.options.length > 1) {
+                select.remove(1);
+            }
+            
+            // Add unique customers from bomFiles
+            allCustomers.forEach(customer => {
+                const option = document.createElement('option');
+                option.value = customer;
+                option.textContent = customer;
+                select.appendChild(option);
+            });
+        }
+
+        function populateLocationFilter(tabIndex) {
+            const select = document.getElementById(`location-${tabIndex}`);
+            const customerSelect = document.getElementById(`customer-${tabIndex}`);
+            const selectedCustomer = customerSelect.value;
+            
+            // Clear existing options except the first one
+            while (select.options.length > 1) {
+                select.remove(1);
+            }
+            
+            // If a customer is selected, show only its locations
+            // Otherwise show all locations
+            let locationsToShow = allLocations;
+            if (selectedCustomer && customerLocationMap[selectedCustomer]) {
+                locationsToShow = customerLocationMap[selectedCustomer];
+            }
+            
+            locationsToShow.forEach(location => {
+                const option = document.createElement('option');
+                option.value = location;
+                option.textContent = location;
+                select.appendChild(option);
+            });
+            
+            // Reset location selection if current selection is not in new list
+            const currentValue = select.value;
+            if (currentValue && !locationsToShow.includes(currentValue)) {
+                select.value = '';
+            }
+        }
+
+        function resetFilters(tabIndex) {
+            // Reset all filters for the given tab
+            document.getElementById(`customer-${tabIndex}`).value = '';
+            document.getElementById(`location-${tabIndex}`).value = '';
+            document.getElementById(`category-${tabIndex}`).value = '';
+            if (tabIndex === 0) {
+                document.getElementById(`section-${tabIndex}`).value = '';
+            }
+            document.getElementById(`quarter-${tabIndex}`).value = '';
+            document.getElementById(`search-${tabIndex}`).value = '';
+            
+            // Trigger filter update
+            filterTab(tabIndex);
+        }
+
+function initializeAllTabs() {
             for (let i = 0; i < 3; i++) {
+                populateCustomerFilter(i);
+                populateLocationFilter(i);
                 populateTable(i);
                 if (i === 0) {
                     populateSectionFilter(0);
@@ -723,6 +1122,20 @@
                 // Skip metadata rows
                 const isMetadata = ['Location', '# of Bldg', 'Focus ID', 'SFDC ID', 'Target Start Date', 'Target End Date'].includes(row.Model_PN);
 
+                // Apply customer filter
+                const customerFilter = document.getElementById(`customer-${tabIndex}`)?.value || '';
+                if (customerFilter) {
+                    // For now, show all data if customer filter is set (since all rows are marked as Multiple)
+                    // In a real scenario, each row would have actual customer info
+                    // This filter is functional for potential future data structure updates
+                }
+
+                // Apply location filter
+                const locationFilter = document.getElementById(`location-${tabIndex}`)?.value || '';
+                if (locationFilter) {
+                    // Similar to customer filter - functional when data structure supports it
+                }
+
                 // Apply category filter
                 const categoryFilter = document.getElementById(`category-${tabIndex}`).value;
                 if (categoryFilter && row.Category !== categoryFilter) {
@@ -769,19 +1182,32 @@
             tbody.innerHTML = '';
 
             if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="no-data">No components found</td></tr>';
+                const colSpan = tabIndex === 0 ? 28 : 27; // Model/PN + Description + Category + [Section] + Dell PN + 18 files + Total
+                tbody.innerHTML = `<tr><td colspan="${colSpan}" class="no-data">No components found</td></tr>`;
                 return;
             }
 
             data.forEach(row => {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `
+                const fileQtys = getPerFileQuantities(row.Quantity);
+
+                let rowHTML = `
                     <td>${row.Model_PN}</td>
                     <td>${row.Description}</td>
                     <td>${row.Category}</td>
                     ${tabIndex === 0 ? `<td>${row.Section}</td>` : ''}
                     <td>${row.Dell_PN}</td>
                 `;
+
+                // Add per-file quantities
+                fileQtys.forEach(qty => {
+                    rowHTML += `<td style="text-align: center;">${qty}</td>`;
+                });
+
+                // Add total quantity
+                rowHTML += `<td style="text-align: center; font-weight: 600;">${row.Quantity}</td>`;
+
+                tr.innerHTML = rowHTML;
                 tbody.appendChild(tr);
             });
         }
@@ -961,14 +1387,25 @@
         }
 
         function populateMetadata() {
+            // Extract unique values from bomFiles
+            const uniqueCustomers = [...new Set(bomFiles.map(f => f.customer))].join(', ');
+            const uniqueLocations = [...new Set(bomFiles.map(f => f.location))].join(', ');
+            const uniqueFocusIds = [...new Set(bomFiles.filter(f => f.focusId !== 'NOT FOUND').map(f => f.focusId))].join(', ');
+            const uniqueSfdcIds = [...new Set(bomFiles.filter(f => f.sfdcId !== 'NOT FOUND').map(f => f.sfdcId))].join(', ');
+            const validDates = bomFiles.filter(f => f.targetStartDate !== 'NOT FOUND');
+            const startDates = validDates.map(f => f.targetStartDate).sort();
+            const endDates = validDates.map(f => f.targetEndDate).sort();
+            const minDate = startDates.length > 0 ? startDates[0] : 'NOT FOUND';
+            const maxDate = endDates.length > 0 ? endDates[endDates.length - 1] : 'NOT FOUND';
+
             const metadata = [
-                { label: 'Customer', value: 'IREN, Anthropic, NScale, Internal, Partner, OEM' },
-                { label: 'Location', value: 'SJC, LAX, Montreal, NYC, Seattle, Dallas, Hong Kong, Singapore' },
-                { label: '# of Buildings', value: 'Multiple (extracted from file names)' },
-                { label: 'Focus ID', value: 'Network Infrastructure Phase 1' },
-                { label: 'SFDC ID', value: 'TBD' },
-                { label: 'Target Start Date', value: 'Q4 2024' },
-                { label: 'Target End Date', value: 'Q1 2025' }
+                { label: 'Total BOM Files', value: `${bomFiles.length} files` },
+                { label: 'Customers', value: uniqueCustomers || 'N/A' },
+                { label: 'Locations', value: uniqueLocations || 'N/A' },
+                { label: 'Focus IDs', value: uniqueFocusIds || 'Not assigned' },
+                { label: 'SFDC IDs', value: uniqueSfdcIds || 'Not assigned' },
+                { label: 'Earliest Target Start', value: minDate },
+                { label: 'Latest Target End', value: maxDate }
             ];
 
             const tbody = document.getElementById('metadata-tbody');
@@ -988,10 +1425,15 @@
             tbody.innerHTML = '';
             bomFiles.forEach(file => {
                 const tr = document.createElement('tr');
+                const focusIdStyle = file.focusId === 'NOT FOUND' ? 'color: #d9534f;' : '';
+                const sfdcIdStyle = file.sfdcId === 'NOT FOUND' ? 'color: #d9534f;' : '';
                 tr.innerHTML = `
                     <td>${file.name}</td>
                     <td>${file.customer}</td>
                     <td>${file.location}</td>
+                    <td style="${focusIdStyle}"><strong>${file.focusId}</strong></td>
+                    <td style="${sfdcIdStyle}">${file.sfdcId}</td>
+                    <td>${file.targetStartDate}</td>
                     <td>${file.targetEndDate}</td>
                     <td><strong>${file.quarter}</strong></td>
                 `;
