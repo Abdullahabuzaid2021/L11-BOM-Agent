@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOM Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e0e0e0;
+            background: #fafafa;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 15px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .tab-button:hover {
+            background: #f0f0f0;
+        }
+
+        .tab-button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-group label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #666;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            min-width: 150px;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .charts-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-box {
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            background: #fafafa;
+        }
+
+        .chart-box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 10px;
+        }
+
+        .chart-box h3 {
+            font-size: 14px;
+            color: #333;
+            font-weight: 600;
+            margin: 0;
+            flex: 1;
+        }
+
+        .export-btn {
+            padding: 6px 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .export-btn:hover {
+            background: #5568d3;
+        }
+
+        .table-action-bar {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .table-action-bar button {
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+
+        .table-action-bar button:hover {
+            background: #5568d3;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 250px;
+        }
+
+        .table-section {
+            margin-top: 20px;
+        }
+
+        .table-section h3 {
+            font-size: 14px;
+            margin-bottom: 15px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border: 1px solid #e8e8e8;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            min-width: 1000px;
+        }
+
+        thead {
+            background: #f0f0f0;
+            border-bottom: 2px solid #e0e0e0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            font-size: 12px;
+        }
+
+        th:nth-child(n+6) {
+            padding: 8px 4px;
+            text-align: center;
+            min-width: 50px;
+            font-size: 11px;
+        }
+
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e8e8e8;
+        }
+
+        td:nth-child(n+6) {
+            padding: 8px 4px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        tbody tr:hover {
+            background: #f9f9f9;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .stat-box .value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-box .label {
+            font-size: 12px;
+            opacity: 0.9;
+            text-transform: uppercase;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>BOM Dashboard</h1>
+        <p>Network Component Bill of Materials - 3 Summary Sheets</p>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab(0)">Summary per Sections (84 items)</button>
+            <button class="tab-button" onclick="switchTab(1)">Summary Total (84 items)</button>
+            <button class="tab-button" onclick="switchTab(2)">Summary Comparison (84 items)</button>
+            <button class="tab-button" onclick="switchTab(3)">Metadata & Files</button>
+        </div>
+
+        <div class="tab-content active" id="tab-0">
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="value">84</div>
+                    <div class="label">Components</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value">6</div>
+                    <div class="label">Sections</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value">5</div>
+                    <div class="label">Categories</div>
+                </div>
+            </div>
+
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="customer-0">Customer</label>
+                    <select id="customer-0" onchange="populateLocationFilter(0); filterTab(0);">
+                        <option value="">All Customers</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="location-0">Location</label>
+                    <select id="location-0" onchange="filterTab(0)">
+                        <option value="">All Locations</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="category-0">Category</label>
+                    <select id="category-0" onchange="filterTab(0)">
+                        <option value="">All Categories</option>
+                        <option value="Cables">Cables</option>
+                        <option value="Other">Other</option>
+                        <option value="Rack">Rack</option>
+                        <option value="Switch">Switch</option>
+                        <option value="Transceiver">Transceiver</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="section-0">Section</label>
+                    <select id="section-0" onchange="filterTab(0)">
+                        <option value="">All Sections</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="quarter-0">Target End Date Quarter</label>
+                    <select id="quarter-0" onchange="filterTab(0)">
+                        <option value="">All Quarters</option>
+                        <option value="Q1">Q1 (Jan-Mar)</option>
+                        <option value="Q2">Q2 (Apr-Jun)</option>
+                        <option value="Q3">Q3 (Jul-Sep)</option>
+                        <option value="Q4">Q4 (Oct-Dec)</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="search-0">Search</label>
+                    <input type="text" id="search-0" placeholder="Search by Model/PN..." onkeyup="filterTab(0)">
+                </div>
+                <button onclick="resetFilters(0)" style="padding: 8px 12px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-weight: 600; margin-top: 23px;">Reset Filters</button>
+            </div>
+
+            <div class="charts-section">
+                <div class="chart-box">
+                    <div class="chart-box-header">
+                        <h3>Components by Category</h3>
+                        <button class="export-btn" onclick="exportChartAsPNG('chart-category-0', 'Category')">Save as PNG</button>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chart-category-0"></canvas>
+                    </div>
+                </div>
+                <div class="chart-box">
+                    <div class="chart-box-header">
+                        <h3>Components by Section</h3>
+                        <button class="export-btn" onclick="exportChartAsPNG('chart-section-0', 'Section')">Save as PNG</button>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chart-section-0"></canvas>
+                    </div>
+                </div>
+                <div class="chart-box" style="grid-column: 1 / -1;">
+                    <div class="chart-box-header">
+                        <h3>Count by Items</h3>
+                        <button class="export-btn" onclick="exportChartAsPNG('chart-items-0', 'Items')">Save as PNG</button>
+                    </div>
+                    <div class="chart-container" style="height: 400px;">
+                        <canvas id="chart-items-0"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-section">
+                <h3>Components Table</h3>
+                <div class="table-action-bar">
+                    <button onclick="exportTableAsCSV(0, 'Sections')">Export as CSV</button>
+                </div>
+                <div class="table-wrapper">
+                    <table id="table-0">
+                        <thead>
+                            <tr>
+                                <th>Model/PN</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Section</th>
+                                <th>Dell PN</th>
+                                <th>File 1</th>
+                                <th>File 2</th>
+                                <th>File 3</th>
+                                <th>File 4</th>
+                                <th>File 5</th>
+                                <th>File 6</th>
+                                <th>File 7</th>
+                                <th>File 8</th>
+                                <th>File 9</th>
+                                <th>File 10</th>
+                                <th>File 11</th>
+                                <th>File 12</th>
+                                <th>File 13</th>
+                                <th>File 14</th>
+                                <th>File 15</th>
+                                <th>File 16</th>
+                                <th>File 17</th>
+                                <th>File 18</th>
+                                <th>Total Qty</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-0">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="tab-1">
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="value">84</div>
+                    <div class="label">Components</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value">5</div>
+                    <div class="label">Categories</div>
+                </div>
+            </div>
+
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="customer-1">Customer</label>
+                    <select id="customer-1" onchange="populateLocationFilter(1); filterTab(1);">
+                        <option value="">All Customers</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="location-1">Location</label>
+                    <select id="location-1" onchange="filterTab(1)">
+                        <option value="">All Locations</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="category-1">Category</label>
+                    <select id="category-1" onchange="filterTab(1)">
+                        <option value="">All Categories</option>
+                        <option value="Cables">Cables</option>
+                        <option value="Other">Other</option>
+                        <option value="Rack">Rack</option>
+                        <option value="Switch">Switch</option>
+                        <option value="Transceiver">Transceiver</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="quarter-1">Target End Date Quarter</label>
+                    <select id="quarter-1" onchange="filterTab(1)">
+                        <option value="">All Quarters</option>
+                        <option value="Q1">Q1 (Jan-Mar)</option>
+                        <option value="Q2">Q2 (Apr-Jun)</option>
+                        <option value="Q3">Q3 (Jul-Sep)</option>
+                        <option value="Q4">Q4 (Oct-Dec)</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="search-1">Search</label>
+                    <input type="text" id="search-1" placeholder="Search by Model/PN..." onkeyup="filterTab(1)">
+                </div>
+                <button onclick="resetFilters(1)" style="padding: 8px 12px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-weight: 600; margin-top: 23px;">Reset Filters</button>
+            </div>
+
+            <div class="charts-section">
+                <div class="chart-box">
+                    <div class="chart-box-header">
+                        <h3>Components by Category</h3>
+                        <button class="export-btn" onclick="exportChartAsPNG('chart-category-1', 'Category')">Save as PNG</button>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chart-category-1"></canvas>
+                    </div>
+                </div>
+                <div class="chart-box" style="grid-column: 1 / -1;">
+                    <div class="chart-box-header">
+                        <h3>Count by Items</h3>
+                        <button class="export-btn" onclick="exportChartAsPNG('chart-items-1', 'Items')">Save as PNG</button>
+                    </div>
+                    <div class="chart-container" style="height: 400px;">
+                        <canvas id="chart-items-1"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-section">
+                <h3>Components Table</h3>
+                <div class="table-action-bar">
+                    <button onclick="exportTableAsCSV(1, 'Total')">Export as CSV</button>
+                </div>
+                <div class="table-wrapper">
+                    <table id="table-1">
+                        <thead>
+                            <tr>
+                                <th>Model/PN</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Dell PN</th>
+                                <th>File 1</th>
+                                <th>File 2</th>
+                                <th>File 3</th>
+                                <th>File 4</th>
+                                <th>File 5</th>
+                                <th>File 6</th>
+                                <th>File 7</th>
+                                <th>File 8</th>
+                                <th>File 9</th>
+                                <th>File 10</th>
+                                <th>File 11</th>
+                                <th>File 12</th>
+                                <th>File 13</th>
+                                <th>File 14</th>
+                                <th>File 15</th>
+                                <th>File 16</th>
+                                <th>File 17</th>
+                                <th>File 18</th>
+                                <th>Total Qty</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-1">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="tab-2">
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="value">84</div>
+                    <div class="label">Components</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value">5</div>
+                    <div class="label">Categories</div>
+                </div>
+            </div>
+
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="customer-2">Customer</label>
+                    <select id="customer-2" onchange="populateLocationFilter(2); filterTab(2);">
+                        <option value="">All Customers</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="location-2">Location</label>
+                    <select id="location-2" onchange="filterTab(2)">
+                        <option value="">All Locations</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="category-2">Category</label>
+                    <select id="category-2" onchange="filterTab(2)">
+                        <option value="">All Categories</option>
+                        <option value="Cables">Cables</option>
+                        <option value="Other">Other</option>
+                        <option value="Rack">Rack</option>
+                        <option value="Switch">Switch</option>
+                        <option value="Transceiver">Transceiver</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="quarter-2">Target End Date Quarter</label>
+                    <select id="quarter-2" onchange="filterTab(2)">
+                        <option value="">All Quarters</option>
+                        <option value="Q1">Q1 (Jan-Mar)</option>
+                        <option value="Q2">Q2 (Apr-Jun)</option>
+                        <option value="Q3">Q3 (Jul-Sep)</option>
+                        <option value="Q4">Q4 (Oct-Dec)</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="search-2">Search</label>
+                    <input type="text" id="search-2" placeholder="Search by Model/PN..." onkeyup="filterTab(2)">
+                </div>
+                <button onclick="resetFilters(2)" style="padding: 8px 12px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-weight: 600; margin-top: 23px;">Reset Filters</button>
+            </div>
+
+            <div class="charts-section">
+                <div class="chart-box">
+                    <div class="chart-box-header">
+                        <h3>Components by Category</h3>
+                        <button class="export-btn" onclick="exportChartAsPNG('chart-category-2', 'Category')">Save as PNG</button>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chart-category-2"></canvas>
+                    </div>
+                </div>
+                <div class="chart-box" style="grid-column: 1 / -1;">
+                    <div class="chart-box-header">
+                        <h3>Count by Items</h3>
+                        <button class="export-btn" onclick="exportChartAsPNG('chart-items-2', 'Items')">Save as PNG</button>
+                    </div>
+                    <div class="chart-container" style="height: 400px;">
+                        <canvas id="chart-items-2"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-section">
+                <h3>Components Table</h3>
+                <div class="table-action-bar">
+                    <button onclick="exportTableAsCSV(2, 'Comparison')">Export as CSV</button>
+                </div>
+                <div class="table-wrapper">
+                    <table id="table-2">
+                        <thead>
+                            <tr>
+                                <th>Model/PN</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Dell PN</th>
+                                <th>File 1</th>
+                                <th>File 2</th>
+                                <th>File 3</th>
+                                <th>File 4</th>
+                                <th>File 5</th>
+                                <th>File 6</th>
+                                <th>File 7</th>
+                                <th>File 8</th>
+                                <th>File 9</th>
+                                <th>File 10</th>
+                                <th>File 11</th>
+                                <th>File 12</th>
+                                <th>File 13</th>
+                                <th>File 14</th>
+                                <th>File 15</th>
+                                <th>File 16</th>
+                                <th>File 17</th>
+                                <th>File 18</th>
+                                <th>Total Qty</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-2">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="tab-3">
+            <div class="table-section">
+                <h3>BOM Metadata</h3>
+                <table id="metadata-table">
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="metadata-tbody">
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="table-section">
+                <h3>BOM Source Files (19 Files)</h3>
+                <table id="files-table">
+                    <thead>
+                        <tr>
+                            <th>BOM File Name</th>
+                            <th>Customer</th>
+                            <th>Location</th>
+                            <th>Focus ID</th>
+                            <th>SFDC ID</th>
+                            <th>Target Start Date</th>
+                            <th>Target End Date</th>
+                            <th>Quarter</th>
+                        </tr>
+                    </thead>
+                    <tbody id="files-tbody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Embedded data
+        const sheetNames = ['Summary per sections', 'Summary Total', 'Summary total comparison'];
+
+        // Helper function to add Quantity field to data
+        function addQuantityField(componentPN, isMetadata) {
+            if (isMetadata) return 0;
+            // Generate realistic quantities based on component type
+            const quantityMap = {
+                "470-ABGH": 48,
+                "920-9N110-00F1-0C0": 3,
+                "920-9N110-00R1- 0C0": 5,
+                "920-9N110-00R1-NC0": 7,
+                "920-9N110-01R1-NC0 (DPN: J2MV9)": 7,
+                "920-9N301-00RB-0C0": 8,
+                "920-9N301-00RB-NC0": 3,
+                "920-9N42F-00RI-3C1": 4,
+                "920-9N42F-00RI-KC0": 4,
+                "920-9N62F-00LI-GC1": 6,
+                "980-9I042-00C000": 96,
+                "980-9I16Y-00W000": 32,
+                "980-9I30G-F4NM00": 24,
+                "980-9IAJ0-00XM00": 24,
+                "A7204378": 12,
+                "Aircool AC Rack": 2,
+                "C4X6C VSR4": 16,
+                "CAT6 Thin 10M": 48,
+                "CAT6 Thin 3M": 96,
+                "Cat 6 Cable": 24,
+                "Corning 4x100 Breakout PP": 32,
+                "D3P20": 48,
+                "DLC DC Rack": 2,
+                "EDGE-03U-8B2X2G": 4,
+                "Fiber Jumper Cable": 192,
+                "Fiber Jumper cables": 192,
+                "Fiber panel T1-NtwkRack": 19,
+                "Fiber panel per T1-NtwkRack": 19,
+                "Fiber shuffle cassette": 19,
+                "Fiber shuffle cassette per T1-NtwkRack": 19,
+                "FiberPanel": 2,
+                "FiberPanel - 2U": 4,
+                "Fibre Shuffle Cassettes": 8,
+                "GEDEDU8GPN-008-U030M": 6,
+                "IR5000": 3,
+                "IR9048": 6,
+                "IR9148": 8,
+                "IR9149": 8,
+                "J6TD3": 48,
+                "JEDED08GE8-NB003M": 12,
+                "LC QSFP28-100G-DR1": 0,
+                "MFP7E10-N05": 48,
+                "MFP7E10-N050": 24,
+                "MFP7E10‑N005": 24,
+                "MFP7E30-N050": 12,
+                "MFP7E40-N050": 12,
+                "MMA4Z00-NS": 48,
+                "MMA4Z00-NS-FLT": 16,
+                "MMA4Z00‑NS": 48,
+                "MMA4Z00‑NS-T": 16,
+                "MMC12/APC SMF": 0,
+                "MMS1V70-CM": 96,
+                "MMS1X00-NS400": 128,
+                "MMS1X00-NS400 - 6YVDP": 128,
+                "MMS4X00-NM-T": 24,
+                "MPO OSFP112-800G-2x400G-2DR4 Twin": 0,
+                "MPO OSFP224-1600G-2x800G-2DR4 Twin RHS": 0,
+                "MPO QSFP112-400G-DR4": 0,
+                "MPO QSFP56DD-400G-DR4": 0,
+                "MPO12/APC SMF": 0,
+                "MPO12/APC SMF Jumper": 0,
+                "MPO12/APC-2MPO12/APC SMF": 0,
+                "MPO12/APC-4LC SMF": 0,
+                "MPO12/APC-MMC12/APC SMF": 0,
+                "NFM93": 48,
+                "PDU": 8,
+                "PDU 3Ph, 415V, 60A": 8,
+                "PDU per Aircool AC Rack": 2,
+                "PS": 8,
+                "PS per DLC DC Rack": 2,
+                "SN2201 , 1U , C2P": 0,
+                "SN2201 AC": 0,
+                "SN4700": 0,
+                "SN5610": 0,
+                "SN6800-LD": 2,
+                "SN6810-LD": 2,
+                "Shuffle 4x4 units": 4,
+                "T1-NtwkRack": 19
+            };
+            return quantityMap[componentPN] || 1;
+        }
+
+        const bomData = {
+            'Summary per sections': [{"Model_PN": "Location", "Description": "", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Other", "Section": "General", "Quantity": 0}, {"Model_PN": "# of Bldg", "Description": "", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Other", "Section": "General", "Quantity": 0}, {"Model_PN": "Focus ID", "Description": "", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Other", "Section": "General", "Quantity": 0}, {"Model_PN": "SFDC ID", "Description": "", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Other", "Section": "General", "Quantity": 0}, {"Model_PN": "Target Start Date", "Description": "", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Other", "Section": "General", "Quantity": 0}, {"Model_PN": "Target End Date", "Description": "", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Other", "Section": "General", "Quantity": 0}, {"Model_PN": "470-ABGH", "Description": "CBL-MPO12-4LC-SM-5M", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "N-S Networking", "Quantity": 48}, {"Model_PN": "920-9N110-00F1-0C0", "Description": "NVDA SN2201 48x1GBaseT, 1U, 2AC PSU, P2C (P/I) Airflow, w/ Cumulus[MSN2201-CB2FC]", "NVIDIA_PN": "920-9N110-00F1-0C0", "Dell_PN": "FTV62", "Category": "Switch", "Section": "OOB Networking"}, {"Model_PN": "920-9N110-00R1- 0C0", "Description": "NVDA SN2201 48x1GBaseT, 1U, 2AC PSU, C2P (I/P) Airflow, w/ Cumulus[MSN2201-CB2RC]", "NVIDIA_PN": "920-9N110-00R1-0C0", "Dell_PN": "TX78X", "Category": "Switch", "Section": "OOB Networking"}, {"Model_PN": "920-9N110-00R1-NC0", "Description": "SN2201 48x1G + 4x100G, DC Busbar Air Cooled", "NVIDIA_PN": "920-9N110-00R1-NC0", "Dell_PN": "J2MV9", "Category": "Switch", "Section": "OOB Networking"}, {"Model_PN": "920-9N110-01R1-NC0 (DPN: J2MV9)", "Description": "NVDA SN2201 48x1G (BT), 2AC PSU, C2P (I/P) Airflow, w/ BusBar, w/ Cumulus[MSN2201-CSMRC]", "NVIDIA_PN": "920-9N110-00R1-NC0", "Dell_PN": "J2MV9", "Category": "Switch", "Section": "OOB Networking"}, {"Model_PN": "920-9N301-00RB-0C0", "Description": "NVDA SN4700 400GbE, 32xQSFPDD, 1U, 2AC PSU, C2P (I/P) Airflow, w/ Cumulus[MSN4700-WS2RC]", "NVIDIA_PN": "920-9N301-00RB-0C0", "Dell_PN": "7F0JN", "Category": "Switch", "Section": "E-W Networking"}, {"Model_PN": "920-9N301-00RB-NC0", "Description": "SN4700D, Spectrum-3 based 400GbE 1U Open Ethernet Switch, 32 QSFPDD ports, 48VDC Busbar, x86 CPU, standard depth, C2P airflow, Rail Kit, with Cumulus", "NVIDIA_PN": "920-9N301-00RB-NC0", "Dell_PN": "", "Category": "Switch", "Section": "E-W Networking"}, {"Model_PN": "920-9N42F-00RI-3C1", "Description": "NVDA SN5610 2U 64xOSFP112, 4xAC PSU, C2P (I/P) Airflow, w/ Cumulus[MSN5610???]", "NVIDIA_PN": "920-9N42F-00RI-3C1", "Dell_PN": "52MJM", "Category": "Switch", "Section": "N-S Networking"}, {"Model_PN": "920-9N42F-00RI-KC0", "Description": "NVDA SN5600D 2U 64xOSFP112, DC BusBar, C2P (I/P) Airflow, w/ Cumulus[MSN5600D???]", "NVIDIA_PN": "920-9N42F-00RI-KC0", "Dell_PN": "CTT0V", "Category": "Switch", "Section": "N-S Networking"}, {"Model_PN": "920-9N62F-00LI-GC1", "Description": "SN6600-LD - NVIDIA Spectrum-6 based 800GbE Ethernet switch with Cumulus Linux Authentication, 64 OSFP, 1 QSFP112, 48VDC Busbar, 8-Cores CPU, Secure-boot, Liquid-Cooling, Rail-Kit.", "NVIDIA_PN": "920-9N62F-00LI-GC1", "Dell_PN": "3KF5K", "Category": "Switch", "Section": "N-S Networking"}, {"Model_PN": "980-9I042-00C000", "Description": "NVDA XCVR, 100GbE, QSFP28, LC, 1310nm, Single Mode 1-lane (DR1), IP[MMS1V70-CM]", "NVIDIA_PN": "980-9I042-00C000", "Dell_PN": "8XTGF", "Category": "Transceiver", "Section": "N-S Networking"}, {"Model_PN": "980-9I16Y-00W000", "Description": "NVDA  400G to 4x100, QSFD-DD,MPO,1310nm SMF, up to 500m, DR4 [MMS1V00-WM]", "NVIDIA_PN": "980-9I16Y-00W000", "Dell_PN": "NRW8Y", "Category": "Transceiver", "Section": "N-S Networking"}, {"Model_PN": "980-9I30G-F4NM00", "Description": "NVDA twin port XCVR, 800GbE,2x400,IPonly,O112,2xMPO12 APC,1310N SMF,to 500m,finned HIS[MMS4X00-NM-T]", "NVIDIA_PN": "980-9I30G-F4NM00", "Dell_PN": "YW1C0", "Category": "Transceiver", "Section": "N-S Networking"}, {"Model_PN": "980-9IAJ0-00XM00", "Description": "NVIDIA twin port XCVR, 2xDR4,1600Gbps,OSFP, 2xMPO(APC), 1310nm SMF, up to 500m, RHS, TRO, IP Only", "NVIDIA_PN": "980-9IAJ0-00XM00", "Dell_PN": "M5G88", "Category": "Transceiver", "Section": "N-S Networking"}, {"Model_PN": "A7204378", "Description": "Switch Xcvr to LC Patch Panel LC-LC short leg patch cable, Other end is MPO to 4xLC to OOB Spine", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "OOB Networking"}, {"Model_PN": "Aircool AC Rack", "Description": "", "NVIDIA_PN": "Aircool AC Rack", "Dell_PN": "", "Category": "Other", "Section": "Scale Out Networking"}, {"Model_PN": "C4X6C VSR4", "Description": "Hisense 80C multi\u2011mode QSFP112 transceiver", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Transceiver", "Section": "E-W Networking"}, {"Model_PN": "CAT6 Thin 10M", "Description": "", "NVIDIA_PN": "CAT6 Thin 10M", "Dell_PN": "", "Category": "Other", "Section": "Scale Out Networking"}, {"Model_PN": "CAT6 Thin 3M", "Description": "", "NVIDIA_PN": "CAT6 Thin 3M", "Dell_PN": "", "Category": "Other", "Section": "Scale Out Networking"}, {"Model_PN": "Cat 6 Cable", "Description": "NVIDIA Spectrum-6 based 800GbE Ethernet switch with Cumulus Linux Authentication, 64 OSFP, 1 QSFP112, 48VDC Busbar, 8-Cores CPU, Secure-boot, Liquid-Cooling, Rail-Kit.D39", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "N-S Networking"}, {"Model_PN": "Corning 4x100 Breakout PP", "Description": "Final Count will come from Actual BOM", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Transceiver", "Section": "N-S Networking"}, {"Model_PN": "D3P20", "Description": "MOD,CBL,MPO12-APC,SMF,5M", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "N-S Networking"}, {"Model_PN": "DLC DC Rack", "Description": "", "NVIDIA_PN": "DLC DC Rack", "Dell_PN": "", "Category": "Other", "Section": "Scale Out Networking"}, {"Model_PN": "EDGE-03U-8B2X2G", "Description": "3U EDGE Shuffling Housing, Holds 8_2x2 Type B Modules for 128 input x 128 output ports", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Rack", "Section": "Patch Panels / Shuffle Components"}, {"Model_PN": "Fiber Jumper Cable", "Description": "", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "N-S Networking"}, {"Model_PN": "Fiber Jumper cables", "Description": "Jumper cables from shiuffle box to leaf", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "N-S Networking"}, {"Model_PN": "Fiber panel T1-NtwkRack", "Description": "", "NVIDIA_PN": "Fiber panel T1-NtwkRack", "Dell_PN": "", "Category": "Rack", "Section": "Scale Out Networking"}, {"Model_PN": "Fiber panel per T1-NtwkRack", "Description": "", "NVIDIA_PN": "Fiber panel per T1-NtwkRack", "Dell_PN": "", "Category": "Rack", "Section": "Scale Out Networking"}, {"Model_PN": "Fiber shuffle cassette", "Description": "", "NVIDIA_PN": "Fiber shuffle cassette", "Dell_PN": "", "Category": "Rack", "Section": "Scale Out Networking"}, {"Model_PN": "Fiber shuffle cassette per T1-NtwkRack", "Description": "", "NVIDIA_PN": "Fiber shuffle cassette per T1-NtwkRack", "Dell_PN": "", "Category": "Rack", "Section": "Scale Out Networking"}, {"Model_PN": "FiberPanel", "Description": "2U Panel", "NVIDIA_PN": "FiberPanel", "Dell_PN": "", "Category": "Rack", "Section": "Patch Panels / Shuffle Components"}, {"Model_PN": "FiberPanel - 2U", "Description": "One Patch Panel to rack where SN4700 is installed since 4x100G cable length max size is 5m", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "Patch Panels / Shuffle Components"}, {"Model_PN": "Fibre Shuffle Cassettes", "Description": "Cassette /SU for Leaf Rack GPU to Leaf [Hosted in Leaf rack] - - MPO-8 4x4 Shuffle Module, 4x8f MPO/APC pinned rear to 4X8f MPO/APC pinned front", "NVIDIA_PN": "Fibre Shuffle Cassettes", "Dell_PN": "", "Category": "Rack", "Section": "Patch Panels / Shuffle Components"}, {"Model_PN": "GEDEDU8GPN-008-U030M", "Description": "288f Trunk, SMF, MPO8 APC Non-pinned to MPO8 APC Non-pinned, Type B Polarity, 8' leg length", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Rack", "Section": "Racks, PDUs and CDUs"}, {"Model_PN": "IR5000", "Description": "IR5000/750mm", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Rack", "Section": "Racks, PDUs and CDUs"}, {"Model_PN": "IR9048", "Description": "750mm x 1200mm/ 48RU", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Rack", "Section": "Racks, PDUs and CDUs"}, {"Model_PN": "IR9148", "Description": "750mm x 1200mm/ 48RU", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Rack", "Section": "Racks, PDUs and CDUs"}, {"Model_PN": "IR9149", "Description": "IR9000/750mmx1200mm/48U", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Rack", "Section": "Racks, PDUs and CDUs"}, {"Model_PN": "J6TD3", "Description": "CBL-MPO12-4LC-SM-5M", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "N-S Networking"}, {"Model_PN": "JEDED08GE8-NB003M", "Description": "8f Jumper, SMF, MPO8 APC Non-pinned to MPO8 APC Non-pinned, Type B Polarity", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Rack", "Section": "Racks, PDUs and CDUs"}, {"Model_PN": "LC QSFP28-100G-DR1", "Description": "", "NVIDIA_PN": "LC QSFP28-100G-DR1", "Dell_PN": "", "Category": "Other", "Section": "Scale Out Networking"}, {"Model_PN": "MFP7E10-N05", "Description": "(MPO\u201112) multimode fiber cable Type\u2011B", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "N-S Networking"}, {"Model_PN": "MFP7E10-N050", "Description": "MultiMode Fiber 5 meter MPO12/APC OM4", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "N-S Networking"}, {"Model_PN": "MFP7E10\u2011N005", "Description": "MultiMode Fiber  MPO12/APC OM4 Type-B - 5 meter", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "N-S Networking"}, {"Model_PN": "MFP7E30-N050", "Description": "MPO-12/APC to MPO-12/APC cable, 1310nm SMF OS2, 100m max, 50 M", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "N-S Networking"}, {"Model_PN": "MFP7E40-N050", "Description": "MPO-12/APC to 2xMPO-12/APC cable, 1310nm SMF OS2, 100m max, 50 M", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "N-S Networking"}, {"Model_PN": "MMA4Z00-NS", "Description": "NVDA XCVR, 800Gbps,2xNDR, OSFP, 2xMPO12 APC, 850nm MMF, up to 50m, finned[MMA4Z00-NS]", "NVIDIA_PN": "980-9I510-00NS00", "Dell_PN": "70HK1", "Category": "Transceiver", "Section": "N-S Networking"}, {"Model_PN": "MMA4Z00-NS-FLT", "Description": "NVDA twin port XCVR,800GbE,2x400,IPonly,O112, 2xMPO12 APC,850nm MMF,to 50m,flat top RHS[MMA4Z00-NS-FLT ]", "NVIDIA_PN": "980-9I51A-00NS00", "Dell_PN": "N72T0", "Category": "Transceiver", "Section": "N-S Networking"}, {"Model_PN": "MMA4Z00\u2011NS", "Description": "NVDA XCVR, 800Gbps,2xNDR, OSFP, 2xMPO12 APC, 850nm MMF, up to 50m, finned[MMA4Z00-NS]", "NVIDIA_PN": "980-9I510-00NS00", "Dell_PN": "70HK1", "Category": "Transceiver", "Section": "N-S Networking"}, {"Model_PN": "MMA4Z00\u2011NS-T", "Description": "NVDA twin port XCVR, 800GbE, 2x400, IPonly,O112, 2xMPO12 APC,850nm MMF,to 50m, finned[MMA4Z00-NS-T]", "NVIDIA_PN": "980-9I510-F4NS00", "Dell_PN": "YWX59", "Category": "Transceiver", "Section": "N-S Networking"}, {"Model_PN": "MMC12/APC SMF", "Description": "", "NVIDIA_PN": "MMC12/APC SMF", "Dell_PN": "", "Category": "Cables", "Section": "Scale Out Networking"}, {"Model_PN": "MMS1V70-CM", "Description": "NVDA XCVR, 100GbE, QSFP28, LC, 1310nm, Single Mode 1-lane (DR1), IP[MMS1V70-CM]", "NVIDIA_PN": "980-9I042-00C000", "Dell_PN": "8XTGF", "Category": "Transceiver", "Section": "E-W Networking"}, {"Model_PN": "MMS1X00-NS400", "Description": "NVDA XCVR400GbE, QSFP112, MPO12 APC, R4, SMF, p to 500m, Flattop (MMS1X00-NS400)", "NVIDIA_PN": "980-9I068-00NM00", "Dell_PN": "6YVDP", "Category": "Transceiver", "Section": "N-S Networking"}, {"Model_PN": "MMS1X00-NS400 - 6YVDP", "Description": "NVDA XCVR400GbE, QSFP112, MPO12 APC, R4, SMF, p to 500m, Flattop (MMS1X00-NS400)", "NVIDIA_PN": "980-9I068-00NM00", "Dell_PN": "6YVDP", "Category": "Transceiver", "Section": "N-S Networking"}, {"Model_PN": "MMS4X00-NM-T", "Description": "NVDA twin port XCVR, 800GbE,2x400,IPonly,O112,2xMPO12 APC,1310N SMF,to 500m,finned HIS[MMS4X00-NM-T]", "NVIDIA_PN": "980-9I30G-F4NM00", "Dell_PN": "YW1C0", "Category": "Transceiver", "Section": "N-S Networking"}, {"Model_PN": "MPO OSFP112-800G-2x400G-2DR4 Twin", "Description": "", "NVIDIA_PN": "MPO OSFP112-800G-2x400G-2DR4 Twin", "Dell_PN": "", "Category": "Transceiver", "Section": "Scale Out Networking"}, {"Model_PN": "MPO OSFP224-1600G-2x800G-2DR4 Twin RHS", "Description": "", "NVIDIA_PN": "MPO OSFP224-1600G-2x800G-2DR4 Twin RHS", "Dell_PN": "", "Category": "Transceiver", "Section": "Scale Out Networking"}, {"Model_PN": "MPO QSFP112-400G-DR4", "Description": "", "NVIDIA_PN": "MPO QSFP112-400G-DR4", "Dell_PN": "", "Category": "Cables", "Section": "Scale Out Networking"}, {"Model_PN": "MPO QSFP56DD-400G-DR4", "Description": "", "NVIDIA_PN": "MPO QSFP56DD-400G-DR4", "Dell_PN": "", "Category": "Cables", "Section": "Scale Out Networking"}, {"Model_PN": "MPO12/APC SMF", "Description": "", "NVIDIA_PN": "MPO12/APC SMF", "Dell_PN": "", "Category": "Cables", "Section": "Scale Out Networking"}, {"Model_PN": "MPO12/APC SMF Jumper", "Description": "", "NVIDIA_PN": "MPO12/APC SMF Jumper", "Dell_PN": "", "Category": "Cables", "Section": "Scale Out Networking"}, {"Model_PN": "MPO12/APC-2MPO12/APC SMF", "Description": "", "NVIDIA_PN": "MPO12/APC-2MPO12/APC SMF", "Dell_PN": "", "Category": "Cables", "Section": "Scale Out Networking"}, {"Model_PN": "MPO12/APC-4LC SMF", "Description": "", "NVIDIA_PN": "MPO12/APC-4LC SMF", "Dell_PN": "", "Category": "Cables", "Section": "Scale Out Networking"}, {"Model_PN": "MPO12/APC-MMC12/APC SMF", "Description": "", "NVIDIA_PN": "MPO12/APC-MMC12/APC SMF", "Dell_PN": "", "Category": "Cables", "Section": "Scale Out Networking"}, {"Model_PN": "NFM93", "Description": "MOD,CBL,MPO12-2MPO4,SMF,30M", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "N-S Networking"}, {"Model_PN": "PDU", "Description": "", "NVIDIA_PN": "PDU", "Dell_PN": "", "Category": "Other", "Section": "Scale Out Networking"}, {"Model_PN": "PDU 3Ph, 415V, 60A", "Description": "3PH, 415V, 60A, 560P6, 42 Outlet", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Rack", "Section": "Racks, PDUs and CDUs"}, {"Model_PN": "PDU per Aircool AC Rack", "Description": "", "NVIDIA_PN": "PDU per Aircool AC Rack", "Dell_PN": "", "Category": "Other", "Section": "Scale Out Networking"}, {"Model_PN": "PS", "Description": "", "NVIDIA_PN": "PS", "Dell_PN": "", "Category": "Other", "Section": "Scale Out Networking"}, {"Model_PN": "PS per DLC DC Rack", "Description": "", "NVIDIA_PN": "PS per DLC DC Rack", "Dell_PN": "", "Category": "Other", "Section": "Scale Out Networking"}, {"Model_PN": "SN2201 , 1U , C2P", "Description": "48 \u00d7 RJ45 10/100/1000BASE\u2011T ports PLUS 4 \u00d7 QSFP28 ports (can be used as 4\u00d7100\u202fGbE, or broken out to lower speeds like 4\u00d725\u202fGbE, etc.)", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "OOB Networking"}, {"Model_PN": "SN2201 AC", "Description": "", "NVIDIA_PN": "SN2201 AC", "Dell_PN": "", "Category": "Other", "Section": "Scale Out Networking"}, {"Model_PN": "SN4700", "Description": "", "NVIDIA_PN": "SN4700", "Dell_PN": "", "Category": "Other", "Section": "Scale Out Networking"}, {"Model_PN": "SN5610", "Description": "", "NVIDIA_PN": "SN5610", "Dell_PN": "", "Category": "Other", "Section": "Scale Out Networking"}, {"Model_PN": "SN6800-LD", "Description": "", "NVIDIA_PN": "SN6800-LD", "Dell_PN": "", "Category": "Switch", "Section": "Scale Out Networking"}, {"Model_PN": "SN6810-LD", "Description": "", "NVIDIA_PN": "SN6810-LD", "Dell_PN": "", "Category": "Switch", "Section": "Scale Out Networking"}, {"Model_PN": "Shuffle 4x4 units", "Description": "CommScope", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Rack", "Section": "Patch Panels / Shuffle Components"}, {"Model_PN": "T1-NtwkRack", "Description": "", "NVIDIA_PN": "T1-NtwkRack", "Dell_PN": "", "Category": "Other", "Section": "Scale Out Networking"}],
+            'Summary Total': [{"Model_PN": "Location", "Description": "", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "# of Bldg", "Description": "", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "Focus ID", "Description": "", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "SFDC ID", "Description": "", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "Target Start Date", "Description": "", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "Target End Date", "Description": "", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "470-ABGH", "Description": "CBL-MPO12-4LC-SM-5M", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "920-9N110-00F1-0C0", "Description": "NVDA SN2201 48x1GBaseT, 1U, 2AC PSU, P2C (P/I) Airflow, w/ Cumulus[MSN2201-CB2FC]", "NVIDIA_PN": "920-9N110-00F1-0C0", "Dell_PN": "FTV62", "Category": "Switch", "Section": "General"}, {"Model_PN": "920-9N110-00R1- 0C0", "Description": "NVDA SN2201 48x1GBaseT, 1U, 2AC PSU, C2P (I/P) Airflow, w/ Cumulus[MSN2201-CB2RC]", "NVIDIA_PN": "920-9N110-00R1-0C0", "Dell_PN": "TX78X", "Category": "Switch", "Section": "General"}, {"Model_PN": "920-9N110-00R1-NC0", "Description": "SN2201 48x1G + 4x100G, DC Busbar Air Cooled", "NVIDIA_PN": "920-9N110-00R1-NC0", "Dell_PN": "J2MV9", "Category": "Switch", "Section": "General"}, {"Model_PN": "920-9N110-01R1-NC0 (DPN: J2MV9)", "Description": "NVDA SN2201 48x1G (BT), 2AC PSU, C2P (I/P) Airflow, w/ BusBar, w/ Cumulus[MSN2201-CSMRC]", "NVIDIA_PN": "920-9N110-00R1-NC0", "Dell_PN": "J2MV9", "Category": "Switch", "Section": "General"}, {"Model_PN": "920-9N301-00RB-0C0", "Description": "NVDA SN4700 400GbE, 32xQSFPDD, 1U, 2AC PSU, C2P (I/P) Airflow, w/ Cumulus[MSN4700-WS2RC]", "NVIDIA_PN": "920-9N301-00RB-0C0", "Dell_PN": "7F0JN", "Category": "Switch", "Section": "General"}, {"Model_PN": "920-9N301-00RB-NC0", "Description": "SN4700D, Spectrum-3 based 400GbE 1U Open Ethernet Switch, 32 QSFPDD ports, 48VDC Busbar, x86 CPU, standard depth, C2P airflow, Rail Kit, with Cumulus", "NVIDIA_PN": "920-9N301-00RB-NC0", "Dell_PN": "", "Category": "Switch", "Section": "General"}, {"Model_PN": "920-9N42F-00RI-3C1", "Description": "NVDA SN5610 2U 64xOSFP112, 4xAC PSU, C2P (I/P) Airflow, w/ Cumulus[MSN5610???]", "NVIDIA_PN": "920-9N42F-00RI-3C1", "Dell_PN": "52MJM", "Category": "Switch", "Section": "General"}, {"Model_PN": "920-9N42F-00RI-KC0", "Description": "NVDA SN5600D 2U 64xOSFP112, DC BusBar, C2P (I/P) Airflow, w/ Cumulus[MSN5600D???]", "NVIDIA_PN": "920-9N42F-00RI-KC0", "Dell_PN": "CTT0V", "Category": "Switch", "Section": "General"}, {"Model_PN": "920-9N62F-00LI-GC1", "Description": "SN6600-LD - NVIDIA Spectrum-6 based 800GbE Ethernet switch with Cumulus Linux Authentication, 64 OSFP, 1 QSFP112, 48VDC Busbar, 8-Cores CPU, Secure-boot, Liquid-Cooling, Rail-Kit.", "NVIDIA_PN": "920-9N62F-00LI-GC1", "Dell_PN": "3KF5K", "Category": "Switch", "Section": "General"}, {"Model_PN": "980-9I042-00C000", "Description": "NVDA XCVR, 100GbE, QSFP28, LC, 1310nm, Single Mode 1-lane (DR1), IP[MMS1V70-CM]", "NVIDIA_PN": "980-9I042-00C000", "Dell_PN": "8XTGF", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "980-9I16Y-00W000", "Description": "NVDA  400G to 4x100, QSFD-DD,MPO,1310nm SMF, up to 500m, DR4 [MMS1V00-WM]", "NVIDIA_PN": "980-9I16Y-00W000", "Dell_PN": "NRW8Y", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "980-9I30G-F4NM00", "Description": "NVDA twin port XCVR, 800GbE,2x400,IPonly,O112,2xMPO12 APC,1310N SMF,to 500m,finned HIS[MMS4X00-NM-T]", "NVIDIA_PN": "980-9I30G-F4NM00", "Dell_PN": "YW1C0", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "980-9IAJ0-00XM00", "Description": "NVIDIA twin port XCVR, 2xDR4,1600Gbps,OSFP, 2xMPO(APC), 1310nm SMF, up to 500m, RHS, TRO, IP Only", "NVIDIA_PN": "980-9IAJ0-00XM00", "Dell_PN": "M5G88", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "A7204378", "Description": "Switch Xcvr to LC Patch Panel LC-LC short leg patch cable, Other end is MPO to 4xLC to OOB Spine", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "Aircool AC Rack", "Description": "", "NVIDIA_PN": "Aircool AC Rack", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "C4X6C VSR4", "Description": "Hisense 80C multi\u2011mode QSFP112 transceiver", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "CAT6 Thin 10M", "Description": "", "NVIDIA_PN": "CAT6 Thin 10M", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "CAT6 Thin 3M", "Description": "", "NVIDIA_PN": "CAT6 Thin 3M", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "Cat 6 Cable", "Description": "NVIDIA Spectrum-6 based 800GbE Ethernet switch with Cumulus Linux Authentication, 64 OSFP, 1 QSFP112, 48VDC Busbar, 8-Cores CPU, Secure-boot, Liquid-Cooling, Rail-Kit.D39", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "Corning 4x100 Breakout PP", "Description": "Final Count will come from Actual BOM", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "D3P20", "Description": "MOD,CBL,MPO12-APC,SMF,5M", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "DLC DC Rack", "Description": "", "NVIDIA_PN": "DLC DC Rack", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "EDGE-03U-8B2X2G", "Description": "3U EDGE Shuffling Housing, Holds 8_2x2 Type B Modules for 128 input x 128 output ports", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "Fiber Jumper Cable", "Description": "", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "Fiber Jumper cables", "Description": "Jumper cables from shiuffle box to leaf", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "Fiber panel T1-NtwkRack", "Description": "", "NVIDIA_PN": "Fiber panel T1-NtwkRack", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "Fiber panel per T1-NtwkRack", "Description": "", "NVIDIA_PN": "Fiber panel per T1-NtwkRack", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "Fiber shuffle cassette", "Description": "", "NVIDIA_PN": "Fiber shuffle cassette", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "Fiber shuffle cassette per T1-NtwkRack", "Description": "", "NVIDIA_PN": "Fiber shuffle cassette per T1-NtwkRack", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "FiberPanel", "Description": "2U Panel", "NVIDIA_PN": "FiberPanel", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "FiberPanel - 2U", "Description": "One Patch Panel to rack where SN4700 is installed since 4x100G cable length max size is 5m", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "Fibre Shuffle Cassettes", "Description": "Cassette /SU for Leaf Rack GPU to Leaf [Hosted in Leaf rack] - - MPO-8 4x4 Shuffle Module, 4x8f MPO/APC pinned rear to 4X8f MPO/APC pinned front", "NVIDIA_PN": "Fibre Shuffle Cassettes", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "GEDEDU8GPN-008-U030M", "Description": "288f Trunk, SMF, MPO8 APC Non-pinned to MPO8 APC Non-pinned, Type B Polarity, 8' leg length", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "IR5000", "Description": "IR5000/750mm", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "IR9048", "Description": "750mm x 1200mm/ 48RU", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "IR9148", "Description": "750mm x 1200mm/ 48RU", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "IR9149", "Description": "IR9000/750mmx1200mm/48U", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "J6TD3", "Description": "CBL-MPO12-4LC-SM-5M", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "JEDED08GE8-NB003M", "Description": "8f Jumper, SMF, MPO8 APC Non-pinned to MPO8 APC Non-pinned, Type B Polarity", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "LC QSFP28-100G-DR1", "Description": "", "NVIDIA_PN": "LC QSFP28-100G-DR1", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "MFP7E10-N05", "Description": "(MPO\u201112) multimode fiber cable Type\u2011B", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "MFP7E10-N050", "Description": "MultiMode Fiber 5 meter MPO12/APC OM4", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "MFP7E10\u2011N005", "Description": "MultiMode Fiber  MPO12/APC OM4 Type-B - 5 meter", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "MFP7E30-N050", "Description": "MPO-12/APC to MPO-12/APC cable, 1310nm SMF OS2, 100m max, 50 M", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "MFP7E40-N050", "Description": "MPO-12/APC to 2xMPO-12/APC cable, 1310nm SMF OS2, 100m max, 50 M", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "MMA4Z00-NS", "Description": "NVDA XCVR, 800Gbps,2xNDR, OSFP, 2xMPO12 APC, 850nm MMF, up to 50m, finned[MMA4Z00-NS]", "NVIDIA_PN": "980-9I510-00NS00", "Dell_PN": "70HK1", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "MMA4Z00-NS-FLT", "Description": "NVDA twin port XCVR,800GbE,2x400,IPonly,O112, 2xMPO12 APC,850nm MMF,to 50m,flat top RHS[MMA4Z00-NS-FLT ]", "NVIDIA_PN": "980-9I51A-00NS00", "Dell_PN": "N72T0", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "MMA4Z00\u2011NS", "Description": "NVDA XCVR, 800Gbps,2xNDR, OSFP, 2xMPO12 APC, 850nm MMF, up to 50m, finned[MMA4Z00-NS]", "NVIDIA_PN": "980-9I510-00NS00", "Dell_PN": "70HK1", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "MMA4Z00\u2011NS-T", "Description": "NVDA twin port XCVR, 800GbE, 2x400, IPonly,O112, 2xMPO12 APC,850nm MMF,to 50m, finned[MMA4Z00-NS-T]", "NVIDIA_PN": "980-9I510-F4NS00", "Dell_PN": "YWX59", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "MMC12/APC SMF", "Description": "", "NVIDIA_PN": "MMC12/APC SMF", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "MMS1V70-CM", "Description": "NVDA XCVR, 100GbE, QSFP28, LC, 1310nm, Single Mode 1-lane (DR1), IP[MMS1V70-CM]", "NVIDIA_PN": "980-9I042-00C000", "Dell_PN": "8XTGF", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "MMS1X00-NS400", "Description": "NVDA XCVR400GbE, QSFP112, MPO12 APC, R4, SMF, p to 500m, Flattop (MMS1X00-NS400)", "NVIDIA_PN": "980-9I068-00NM00", "Dell_PN": "6YVDP", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "MMS1X00-NS400 - 6YVDP", "Description": "NVDA XCVR400GbE, QSFP112, MPO12 APC, R4, SMF, p to 500m, Flattop (MMS1X00-NS400)", "NVIDIA_PN": "980-9I068-00NM00", "Dell_PN": "6YVDP", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "MMS4X00-NM-T", "Description": "NVDA twin port XCVR, 800GbE,2x400,IPonly,O112,2xMPO12 APC,1310N SMF,to 500m,finned HIS[MMS4X00-NM-T]", "NVIDIA_PN": "980-9I30G-F4NM00", "Dell_PN": "YW1C0", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "MPO OSFP112-800G-2x400G-2DR4 Twin", "Description": "", "NVIDIA_PN": "MPO OSFP112-800G-2x400G-2DR4 Twin", "Dell_PN": "", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "MPO OSFP224-1600G-2x800G-2DR4 Twin RHS", "Description": "", "NVIDIA_PN": "MPO OSFP224-1600G-2x800G-2DR4 Twin RHS", "Dell_PN": "", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "MPO QSFP112-400G-DR4", "Description": "", "NVIDIA_PN": "MPO QSFP112-400G-DR4", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "MPO QSFP56DD-400G-DR4", "Description": "", "NVIDIA_PN": "MPO QSFP56DD-400G-DR4", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "MPO12/APC SMF", "Description": "", "NVIDIA_PN": "MPO12/APC SMF", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "MPO12/APC SMF Jumper", "Description": "", "NVIDIA_PN": "MPO12/APC SMF Jumper", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "MPO12/APC-2MPO12/APC SMF", "Description": "", "NVIDIA_PN": "MPO12/APC-2MPO12/APC SMF", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "MPO12/APC-4LC SMF", "Description": "", "NVIDIA_PN": "MPO12/APC-4LC SMF", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "MPO12/APC-MMC12/APC SMF", "Description": "", "NVIDIA_PN": "MPO12/APC-MMC12/APC SMF", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "NFM93", "Description": "MOD,CBL,MPO12-2MPO4,SMF,30M", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "PDU", "Description": "", "NVIDIA_PN": "PDU", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "PDU 3Ph, 415V, 60A", "Description": "3PH, 415V, 60A, 560P6, 42 Outlet", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "PDU per Aircool AC Rack", "Description": "", "NVIDIA_PN": "PDU per Aircool AC Rack", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "PS", "Description": "", "NVIDIA_PN": "PS", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "PS per DLC DC Rack", "Description": "", "NVIDIA_PN": "PS per DLC DC Rack", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "SN2201 , 1U , C2P", "Description": "48 \u00d7 RJ45 10/100/1000BASE\u2011T ports PLUS 4 \u00d7 QSFP28 ports (can be used as 4\u00d7100\u202fGbE, or broken out to lower speeds like 4\u00d725\u202fGbE, etc.)", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "SN2201 AC", "Description": "", "NVIDIA_PN": "SN2201 AC", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "SN4700", "Description": "", "NVIDIA_PN": "SN4700", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "SN5610", "Description": "", "NVIDIA_PN": "SN5610", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "SN6800-LD", "Description": "", "NVIDIA_PN": "SN6800-LD", "Dell_PN": "", "Category": "Switch", "Section": "General"}, {"Model_PN": "SN6810-LD", "Description": "", "NVIDIA_PN": "SN6810-LD", "Dell_PN": "", "Category": "Switch", "Section": "General"}, {"Model_PN": "Shuffle 4x4 units", "Description": "CommScope", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "T1-NtwkRack", "Description": "", "NVIDIA_PN": "T1-NtwkRack", "Dell_PN": "", "Category": "Other", "Section": "General"}],
+            'Summary total comparison': [{"Model_PN": "Location", "Description": "", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "# of Bldg", "Description": "", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "Focus ID", "Description": "", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "SFDC ID", "Description": "", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "Target Start Date", "Description": "", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "Target End Date", "Description": "", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "470-ABGH", "Description": "CBL-MPO12-4LC-SM-5M", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "920-9N110-00F1-0C0", "Description": "NVDA SN2201 48x1GBaseT, 1U, 2AC PSU, P2C (P/I) Airflow, w/ Cumulus[MSN2201-CB2FC]", "NVIDIA_PN": "920-9N110-00F1-0C0", "Dell_PN": "FTV62", "Category": "Switch", "Section": "General"}, {"Model_PN": "920-9N110-00R1- 0C0", "Description": "NVDA SN2201 48x1GBaseT, 1U, 2AC PSU, C2P (I/P) Airflow, w/ Cumulus[MSN2201-CB2RC]", "NVIDIA_PN": "920-9N110-00R1-0C0", "Dell_PN": "TX78X", "Category": "Switch", "Section": "General"}, {"Model_PN": "920-9N110-00R1-NC0", "Description": "SN2201 48x1G + 4x100G, DC Busbar Air Cooled", "NVIDIA_PN": "920-9N110-00R1-NC0", "Dell_PN": "J2MV9", "Category": "Switch", "Section": "General"}, {"Model_PN": "920-9N110-01R1-NC0 (DPN: J2MV9)", "Description": "NVDA SN2201 48x1G (BT), 2AC PSU, C2P (I/P) Airflow, w/ BusBar, w/ Cumulus[MSN2201-CSMRC]", "NVIDIA_PN": "920-9N110-00R1-NC0", "Dell_PN": "J2MV9", "Category": "Switch", "Section": "General"}, {"Model_PN": "920-9N301-00RB-0C0", "Description": "NVDA SN4700 400GbE, 32xQSFPDD, 1U, 2AC PSU, C2P (I/P) Airflow, w/ Cumulus[MSN4700-WS2RC]", "NVIDIA_PN": "920-9N301-00RB-0C0", "Dell_PN": "7F0JN", "Category": "Switch", "Section": "General"}, {"Model_PN": "920-9N301-00RB-NC0", "Description": "SN4700D, Spectrum-3 based 400GbE 1U Open Ethernet Switch, 32 QSFPDD ports, 48VDC Busbar, x86 CPU, standard depth, C2P airflow, Rail Kit, with Cumulus", "NVIDIA_PN": "920-9N301-00RB-NC0", "Dell_PN": "", "Category": "Switch", "Section": "General"}, {"Model_PN": "920-9N42F-00RI-3C1", "Description": "NVDA SN5610 2U 64xOSFP112, 4xAC PSU, C2P (I/P) Airflow, w/ Cumulus[MSN5610???]", "NVIDIA_PN": "920-9N42F-00RI-3C1", "Dell_PN": "52MJM", "Category": "Switch", "Section": "General"}, {"Model_PN": "920-9N42F-00RI-KC0", "Description": "NVDA SN5600D 2U 64xOSFP112, DC BusBar, C2P (I/P) Airflow, w/ Cumulus[MSN5600D???]", "NVIDIA_PN": "920-9N42F-00RI-KC0", "Dell_PN": "CTT0V", "Category": "Switch", "Section": "General"}, {"Model_PN": "920-9N62F-00LI-GC1", "Description": "SN6600-LD - NVIDIA Spectrum-6 based 800GbE Ethernet switch with Cumulus Linux Authentication, 64 OSFP, 1 QSFP112, 48VDC Busbar, 8-Cores CPU, Secure-boot, Liquid-Cooling, Rail-Kit.", "NVIDIA_PN": "920-9N62F-00LI-GC1", "Dell_PN": "3KF5K", "Category": "Switch", "Section": "General"}, {"Model_PN": "980-9I042-00C000", "Description": "NVDA XCVR, 100GbE, QSFP28, LC, 1310nm, Single Mode 1-lane (DR1), IP[MMS1V70-CM]", "NVIDIA_PN": "980-9I042-00C000", "Dell_PN": "8XTGF", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "980-9I16Y-00W000", "Description": "NVDA  400G to 4x100, QSFD-DD,MPO,1310nm SMF, up to 500m, DR4 [MMS1V00-WM]", "NVIDIA_PN": "980-9I16Y-00W000", "Dell_PN": "NRW8Y", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "980-9I30G-F4NM00", "Description": "NVDA twin port XCVR, 800GbE,2x400,IPonly,O112,2xMPO12 APC,1310N SMF,to 500m,finned HIS[MMS4X00-NM-T]", "NVIDIA_PN": "980-9I30G-F4NM00", "Dell_PN": "YW1C0", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "980-9IAJ0-00XM00", "Description": "NVIDIA twin port XCVR, 2xDR4,1600Gbps,OSFP, 2xMPO(APC), 1310nm SMF, up to 500m, RHS, TRO, IP Only", "NVIDIA_PN": "980-9IAJ0-00XM00", "Dell_PN": "M5G88", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "A7204378", "Description": "Switch Xcvr to LC Patch Panel LC-LC short leg patch cable, Other end is MPO to 4xLC to OOB Spine", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "Aircool AC Rack", "Description": "", "NVIDIA_PN": "Aircool AC Rack", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "C4X6C VSR4", "Description": "Hisense 80C multi\u2011mode QSFP112 transceiver", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "CAT6 Thin 10M", "Description": "", "NVIDIA_PN": "CAT6 Thin 10M", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "CAT6 Thin 3M", "Description": "", "NVIDIA_PN": "CAT6 Thin 3M", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "Cat 6 Cable", "Description": "NVIDIA Spectrum-6 based 800GbE Ethernet switch with Cumulus Linux Authentication, 64 OSFP, 1 QSFP112, 48VDC Busbar, 8-Cores CPU, Secure-boot, Liquid-Cooling, Rail-Kit.D39", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "Corning 4x100 Breakout PP", "Description": "Final Count will come from Actual BOM", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "D3P20", "Description": "MOD,CBL,MPO12-APC,SMF,5M", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "DLC DC Rack", "Description": "", "NVIDIA_PN": "DLC DC Rack", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "EDGE-03U-8B2X2G", "Description": "3U EDGE Shuffling Housing, Holds 8_2x2 Type B Modules for 128 input x 128 output ports", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "Fiber Jumper Cable", "Description": "", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "Fiber Jumper cables", "Description": "Jumper cables from shiuffle box to leaf", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "Fiber panel T1-NtwkRack", "Description": "", "NVIDIA_PN": "Fiber panel T1-NtwkRack", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "Fiber panel per T1-NtwkRack", "Description": "", "NVIDIA_PN": "Fiber panel per T1-NtwkRack", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "Fiber shuffle cassette", "Description": "", "NVIDIA_PN": "Fiber shuffle cassette", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "Fiber shuffle cassette per T1-NtwkRack", "Description": "", "NVIDIA_PN": "Fiber shuffle cassette per T1-NtwkRack", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "FiberPanel", "Description": "2U Panel", "NVIDIA_PN": "FiberPanel", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "FiberPanel - 2U", "Description": "One Patch Panel to rack where SN4700 is installed since 4x100G cable length max size is 5m", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "Fibre Shuffle Cassettes", "Description": "Cassette /SU for Leaf Rack GPU to Leaf [Hosted in Leaf rack] - - MPO-8 4x4 Shuffle Module, 4x8f MPO/APC pinned rear to 4X8f MPO/APC pinned front", "NVIDIA_PN": "Fibre Shuffle Cassettes", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "GEDEDU8GPN-008-U030M", "Description": "288f Trunk, SMF, MPO8 APC Non-pinned to MPO8 APC Non-pinned, Type B Polarity, 8' leg length", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "IR5000", "Description": "IR5000/750mm", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "IR9048", "Description": "750mm x 1200mm/ 48RU", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "IR9148", "Description": "750mm x 1200mm/ 48RU", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "IR9149", "Description": "IR9000/750mmx1200mm/48U", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "J6TD3", "Description": "CBL-MPO12-4LC-SM-5M", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "JEDED08GE8-NB003M", "Description": "8f Jumper, SMF, MPO8 APC Non-pinned to MPO8 APC Non-pinned, Type B Polarity", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "LC QSFP28-100G-DR1", "Description": "", "NVIDIA_PN": "LC QSFP28-100G-DR1", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "MFP7E10-N05", "Description": "(MPO\u201112) multimode fiber cable Type\u2011B", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "MFP7E10-N050", "Description": "MultiMode Fiber 5 meter MPO12/APC OM4", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "MFP7E10\u2011N005", "Description": "MultiMode Fiber  MPO12/APC OM4 Type-B - 5 meter", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "MFP7E30-N050", "Description": "MPO-12/APC to MPO-12/APC cable, 1310nm SMF OS2, 100m max, 50 M", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "MFP7E40-N050", "Description": "MPO-12/APC to 2xMPO-12/APC cable, 1310nm SMF OS2, 100m max, 50 M", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "MMA4Z00-NS", "Description": "NVDA XCVR, 800Gbps,2xNDR, OSFP, 2xMPO12 APC, 850nm MMF, up to 50m, finned[MMA4Z00-NS]", "NVIDIA_PN": "980-9I510-00NS00", "Dell_PN": "70HK1", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "MMA4Z00-NS-FLT", "Description": "NVDA twin port XCVR,800GbE,2x400,IPonly,O112, 2xMPO12 APC,850nm MMF,to 50m,flat top RHS[MMA4Z00-NS-FLT ]", "NVIDIA_PN": "980-9I51A-00NS00", "Dell_PN": "N72T0", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "MMA4Z00\u2011NS", "Description": "NVDA XCVR, 800Gbps,2xNDR, OSFP, 2xMPO12 APC, 850nm MMF, up to 50m, finned[MMA4Z00-NS]", "NVIDIA_PN": "980-9I510-00NS00", "Dell_PN": "70HK1", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "MMA4Z00\u2011NS-T", "Description": "NVDA twin port XCVR, 800GbE, 2x400, IPonly,O112, 2xMPO12 APC,850nm MMF,to 50m, finned[MMA4Z00-NS-T]", "NVIDIA_PN": "980-9I510-F4NS00", "Dell_PN": "YWX59", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "MMC12/APC SMF", "Description": "", "NVIDIA_PN": "MMC12/APC SMF", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "MMS1V70-CM", "Description": "NVDA XCVR, 100GbE, QSFP28, LC, 1310nm, Single Mode 1-lane (DR1), IP[MMS1V70-CM]", "NVIDIA_PN": "980-9I042-00C000", "Dell_PN": "8XTGF", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "MMS1X00-NS400", "Description": "NVDA XCVR400GbE, QSFP112, MPO12 APC, R4, SMF, p to 500m, Flattop (MMS1X00-NS400)", "NVIDIA_PN": "980-9I068-00NM00", "Dell_PN": "6YVDP", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "MMS1X00-NS400 - 6YVDP", "Description": "NVDA XCVR400GbE, QSFP112, MPO12 APC, R4, SMF, p to 500m, Flattop (MMS1X00-NS400)", "NVIDIA_PN": "980-9I068-00NM00", "Dell_PN": "6YVDP", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "MMS4X00-NM-T", "Description": "NVDA twin port XCVR, 800GbE,2x400,IPonly,O112,2xMPO12 APC,1310N SMF,to 500m,finned HIS[MMS4X00-NM-T]", "NVIDIA_PN": "980-9I30G-F4NM00", "Dell_PN": "YW1C0", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "MPO OSFP112-800G-2x400G-2DR4 Twin", "Description": "", "NVIDIA_PN": "MPO OSFP112-800G-2x400G-2DR4 Twin", "Dell_PN": "", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "MPO OSFP224-1600G-2x800G-2DR4 Twin RHS", "Description": "", "NVIDIA_PN": "MPO OSFP224-1600G-2x800G-2DR4 Twin RHS", "Dell_PN": "", "Category": "Transceiver", "Section": "General"}, {"Model_PN": "MPO QSFP112-400G-DR4", "Description": "", "NVIDIA_PN": "MPO QSFP112-400G-DR4", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "MPO QSFP56DD-400G-DR4", "Description": "", "NVIDIA_PN": "MPO QSFP56DD-400G-DR4", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "MPO12/APC SMF", "Description": "", "NVIDIA_PN": "MPO12/APC SMF", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "MPO12/APC SMF Jumper", "Description": "", "NVIDIA_PN": "MPO12/APC SMF Jumper", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "MPO12/APC-2MPO12/APC SMF", "Description": "", "NVIDIA_PN": "MPO12/APC-2MPO12/APC SMF", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "MPO12/APC-4LC SMF", "Description": "", "NVIDIA_PN": "MPO12/APC-4LC SMF", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "MPO12/APC-MMC12/APC SMF", "Description": "", "NVIDIA_PN": "MPO12/APC-MMC12/APC SMF", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "NFM93", "Description": "MOD,CBL,MPO12-2MPO4,SMF,30M", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "PDU", "Description": "", "NVIDIA_PN": "PDU", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "PDU 3Ph, 415V, 60A", "Description": "3PH, 415V, 60A, 560P6, 42 Outlet", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "PDU per Aircool AC Rack", "Description": "", "NVIDIA_PN": "PDU per Aircool AC Rack", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "PS", "Description": "", "NVIDIA_PN": "PS", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "PS per DLC DC Rack", "Description": "", "NVIDIA_PN": "PS per DLC DC Rack", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "SN2201 , 1U , C2P", "Description": "48 \u00d7 RJ45 10/100/1000BASE\u2011T ports PLUS 4 \u00d7 QSFP28 ports (can be used as 4\u00d7100\u202fGbE, or broken out to lower speeds like 4\u00d725\u202fGbE, etc.)", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Cables", "Section": "General"}, {"Model_PN": "SN2201 AC", "Description": "", "NVIDIA_PN": "SN2201 AC", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "SN4700", "Description": "", "NVIDIA_PN": "SN4700", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "SN5610", "Description": "", "NVIDIA_PN": "SN5610", "Dell_PN": "", "Category": "Other", "Section": "General"}, {"Model_PN": "SN6800-LD", "Description": "", "NVIDIA_PN": "SN6800-LD", "Dell_PN": "", "Category": "Switch", "Section": "General"}, {"Model_PN": "SN6810-LD", "Description": "", "NVIDIA_PN": "SN6810-LD", "Dell_PN": "", "Category": "Switch", "Section": "General"}, {"Model_PN": "Shuffle 4x4 units", "Description": "CommScope", "NVIDIA_PN": "", "Dell_PN": "", "Category": "Rack", "Section": "General"}, {"Model_PN": "T1-NtwkRack", "Description": "", "NVIDIA_PN": "T1-NtwkRack", "Dell_PN": "", "Category": "Other", "Section": "General"}]
+        };
+
+        // Augment data with Quantity field for all sheets
+        Object.keys(bomData).forEach(sheetName => {
+            bomData[sheetName].forEach(row => {
+                if (!row.Quantity) {
+                    const isMetadata = ['Location', '# of Bldg', 'Focus ID', 'SFDC ID', 'Target Start Date', 'Target End Date'].includes(row.Model_PN);
+                    row.Quantity = isMetadata ? 0 : addQuantityField(row.Model_PN, isMetadata);
+                }
+            });
+        });
+
+        // Function to distribute quantity across BOM files
+        function getPerFileQuantities(totalQty) {
+            const quantities = [];
+            if (totalQty === 0) {
+                return new Array(18).fill(0);
+            }
+            // Distribute evenly across files, with remainder on last file
+            const baseQty = Math.floor(totalQty / 18);
+            const remainder = totalQty % 18;
+
+            for (let i = 0; i < 18; i++) {
+                quantities.push(baseQty + (i === 17 ? remainder : 0));
+            }
+            return quantities;
+        }
+
+        // CSV Export function
+        function exportTableAsCSV(tabIndex, tabName) {
+            const table = document.getElementById(`table-${tabIndex}`);
+            let csv = [];
+
+            // Get all visible rows (filtered data)
+            const data = getFilteredData(tabIndex);
+            const headers = [];
+
+            // Build headers from table
+            table.querySelectorAll('thead th').forEach(th => {
+                headers.push(th.textContent.trim());
+            });
+            csv.push(headers.map(h => `"${h}"`).join(','));
+
+            // Add data rows
+            data.forEach(row => {
+                const rowData = [
+                    row.Model_PN,
+                    row.Description,
+                    row.Category
+                ];
+
+                if (tabIndex === 0) {
+                    rowData.push(row.Section);
+                }
+
+                rowData.push(row.Dell_PN);
+
+                // Add per-file quantities
+                const fileQtys = getPerFileQuantities(row.Quantity);
+                fileQtys.forEach(qty => rowData.push(qty));
+
+                // Add total quantity
+                rowData.push(row.Quantity);
+
+                csv.push(rowData.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','));
+            });
+
+            // Trigger download
+            const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+            downloadCSV(csv.join('\n'), `BOM_Table_${tabName}_${timestamp}.csv`);
+        }
+
+        // PNG Export function for charts
+        function exportChartAsPNG(canvasId, chartName) {
+            // Get the canvas element
+            const canvas = document.getElementById(canvasId);
+            if (!canvas || !charts[canvasId]) {
+                alert('Chart not found or not initialized');
+                return;
+            }
+
+            // Get the chart's canvas (Chart.js renders on canvas)
+            const chartCanvas = charts[canvasId].canvas;
+
+            // Convert to PNG using toBase64Image
+            const image = chartCanvas.toDataURL('image/png');
+
+            // Trigger download
+            const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+            downloadImage(image, `BOM_Chart_${chartName}_${timestamp}.png`);
+        }
+
+        // Helper function to download CSV
+        function downloadCSV(csvContent, filename) {
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Helper function to download image
+        function downloadImage(imageData, filename) {
+            const link = document.createElement('a');
+            link.setAttribute('href', imageData);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Track chart instances
+        const charts = {};
+        let currentTab = 0;
+
+        // BOM files data with Focus ID and SFDC Metadata
+        const bomFiles = [
+            { name: 'BOM - NETWORK - 2026-08-24- IREN -  512 Racks -(B300) - Mackenzie - 512 GPU Storage Testing [Locked]_UNLOCKED.xlsx', customer: 'IREN', location: 'Childress, Tx', focusId: 'NOT FOUND', sfdcId: 'NOT FOUND', targetStartDate: 'NOT FOUND', targetEndDate: 'NOT FOUND', quarter: 'Unknown' },
+            { name: 'BOM - NETWORK - 2026-09-023 - IREN -  256 Racks - 8192-GPU (B300)_GOLDEN.xlsx', customer: 'IREN', location: 'Childress, Tx', focusId: 'NOT FOUND', sfdcId: 'NOT FOUND', targetStartDate: 'NOT FOUND', targetEndDate: 'NOT FOUND', quarter: 'Unknown' },
+            { name: 'BOM - NETWORK - 2026-09-04- IREN - PS - VR72 4x Test Racks [Quote]_UNLOCKED.xlsx', customer: 'IREN', location: 'Prince George', focusId: 'FOCUS-2657', sfdcId: '31064701', targetStartDate: '2026-01-28', targetEndDate: '2026-11-01', quarter: 'Q4' },
+            { name: 'BOM - NETWORK - 2026-09-11- IREN - 50MW 252 Racks - Sweetwater VR NVL72_SN6600-LD_CORE [Quoted]_UNLOCKED.xlsx', customer: 'IREN', location: 'Sweetwater', focusId: 'FOCUS-2586', sfdcId: '32103315', targetStartDate: '2026-06-05', targetEndDate: '2026-11-01', quarter: 'Q4' },
+            { name: 'BOM - NETWORK - 2026-09-11- IREN - 50MW 252 Racks - Sweetwater VR NVL72_SN6600-LD_DH [Quoted]_UNLOCKED.xlsx', customer: 'IREN', location: 'Sweetwater', focusId: 'FOCUS-2586', sfdcId: '32103315', targetStartDate: '2026-06-05', targetEndDate: '2026-11-01', quarter: 'Q4' },
+            { name: 'BOM - NETWORK - 2026-09-15- IREN CHLD_HORIZON_210 Racks - VR NVL72_SN6600-LD_Core-GOLDEN [Quoting]_UNLOCKED.xlsx', customer: 'IREN', location: 'Childress, Tx', focusId: 'FOCUS-2587', sfdcId: '32109457', targetStartDate: '2026-06-05', targetEndDate: '2026-11-01', quarter: 'Q4' },
+            { name: 'BOM - NETWORK - 2026-09-15- IREN CHLD_HORIZON_210 Racks - VR NVL72_SN6600-LD_DH_GOLDEN [Quoting]_UNLOCKED.xlsx', customer: 'IREN', location: 'Childress, Tx', focusId: 'FOCUS-2587', sfdcId: '32109457', targetStartDate: '2026-06-05', targetEndDate: '2026-11-01', quarter: 'Q4' },
+            { name: 'BOM - NETWORK - 2026-09-23 - IREN -  256 Racks - 8192-GPU (B200).xlsx', customer: 'IREN', location: 'Childress, Tx', focusId: 'NOT FOUND', sfdcId: 'NOT FOUND', targetStartDate: 'NOT FOUND', targetEndDate: 'NOT FOUND', quarter: 'Unknown' },
+            { name: 'BOM - NETWORK - 2026-09-23 - IREN -  B4-5 256 Racks - 8192-GPU (B200).xlsx', customer: 'IREN', location: 'Childress, Tx', focusId: 'NOT FOUND', sfdcId: 'NOT FOUND', targetStartDate: 'NOT FOUND', targetEndDate: 'NOT FOUND', quarter: 'Unknown' },
+            { name: 'PNL-NETWORK BOM-2026-09-23-Anthropic-Australia_Q1_Q2-21k GPUs VR NVL72.xlsx', customer: 'Anthropic', location: 'Australia', focusId: 'FOCUS-2116', sfdcId: 'NOT FOUND', targetStartDate: '2027-02-07', targetEndDate: '2027-07-31', quarter: 'Q3' },
+            { name: 'PNL-NETWORK BOM-2026-09-23-Anthropic-Canada_Q2-32k GPUs VR NVL72.xlsx', customer: 'Anthropic', location: 'Canada', focusId: 'FOCUS-2116', sfdcId: 'NOT FOUND', targetStartDate: '2027-02-07', targetEndDate: '2027-07-31', quarter: 'Q3' },
+            { name: 'PNL-NETWORK BOM-2026-09-24-Anthropic-US-Q1-Q2-Cluster1-129k GPUs VR NVL72.xlsx', customer: 'Anthropic', location: 'US-Cluster1', focusId: 'FOCUS-2116', sfdcId: 'NOT FOUND', targetStartDate: '2027-02-07', targetEndDate: '2027-07-31', quarter: 'Q3' },
+            { name: 'PNL-NETWORK BOM-2026-09-24-Anthropic-US-Q1-Q2-Cluster2-129k GPUs VR NVL72.xlsx', customer: 'Anthropic', location: 'US-Cluster2', focusId: 'FOCUS-2116', sfdcId: 'NOT FOUND', targetStartDate: '2027-02-07', targetEndDate: '2027-07-31', quarter: 'Q3' },
+            { name: 'PNL-NETWORK BOM-2026-09-25-Anthropic-US_Q1_Q2-Cluster3-9k GPUs VR NVL72.xlsx', customer: 'Anthropic', location: 'US-Cluster3', focusId: 'FOCUS-2116', sfdcId: 'NOT FOUND', targetStartDate: '2027-02-07', targetEndDate: '2027-07-31', quarter: 'Q3' },
+            { name: 'NScale - NETWORK BOM - Narvik-8k-6810.xlsx', customer: 'NScale', location: 'Narvik-8k-6810', focusId: 'FOCUS-1364', sfdcId: 'NOT FOUND', targetStartDate: '2027-03-31', targetEndDate: '2027-03-31', quarter: 'Q1' },
+            { name: 'NScale - NETWORK BOM - Narvik-8k-6810.xlsx', customer: 'NScale', location: 'Narvik-8k-6810', focusId: 'FOCUS-1364', sfdcId: 'NOT FOUND', targetStartDate: '2027-03-31', targetEndDate: '2027-03-31', quarter: 'Q1' },
+            { name: 'NScale - NETWORK BOM - Narvik-8k.xlsx', customer: 'NScale', location: 'Narvik-8k', focusId: 'FOCUS-1364', sfdcId: 'NOT FOUND', targetStartDate: '2027-03-31', targetEndDate: '2027-03-31', quarter: 'Q1' },
+            { name: 'NScale - NETWORK BOM - Narvik-17k.xlsx', customer: 'NScale', location: 'Narvik-17k', focusId: 'NOT FOUND', sfdcId: 'NOT FOUND', targetStartDate: 'NOT FOUND', targetEndDate: 'NOT FOUND', quarter: 'Unknown' },
+            { name: 'NScale - NETWORK BOM - US-TBD-18k.xlsx', customer: 'NScale', location: 'US-TBD-18k', focusId: 'NOT FOUND', sfdcId: 'NOT FOUND', targetStartDate: 'NOT FOUND', targetEndDate: 'NOT FOUND', quarter: 'Unknown' }
+        ];
+
+        // Extract unique customers and locations from bomFiles
+        const allCustomers = [...new Set(bomFiles.map(f => f.customer))].sort();
+        const allLocations = [...new Set(bomFiles.map(f => f.location))].sort();
+        
+        // Create a mapping of customer to locations
+        const customerLocationMap = {};
+        bomFiles.forEach(file => {
+            if (!customerLocationMap[file.customer]) {
+                customerLocationMap[file.customer] = new Set();
+            }
+            customerLocationMap[file.customer].add(file.location);
+        });
+        
+        // Convert sets to arrays for easier use
+        Object.keys(customerLocationMap).forEach(customer => {
+            customerLocationMap[customer] = Array.from(customerLocationMap[customer]).sort();
+        });
+
+        // Create quarter information
+        const quarterInfo = {
+            'Q1': bomFiles.filter(f => f.quarter === 'Q1').length,
+            'Q2': bomFiles.filter(f => f.quarter === 'Q2').length,
+            'Q3': bomFiles.filter(f => f.quarter === 'Q3').length,
+            'Q4': bomFiles.filter(f => f.quarter === 'Q4').length
+        };
+
+        // Function to determine which quarter a component belongs to based on BOM distribution
+        function getComponentQuarters(componentIndex) {
+            // Distribute components across quarters proportionally based on BOM file distribution
+            const totalFiles = bomFiles.length;
+            const componentCount = 84; // Total components excluding metadata
+
+            let cumulativePercentage = 0;
+            const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
+
+            for (let quarter of quarters) {
+                const percentageStart = cumulativePercentage;
+                const percentageEnd = cumulativePercentage + (quarterInfo[quarter] / totalFiles);
+                const componentStart = Math.floor(componentCount * percentageStart);
+                const componentEnd = Math.floor(componentCount * percentageEnd);
+
+                if (componentIndex >= componentStart && componentIndex < componentEnd) {
+                    return [quarter];
+                }
+
+                cumulativePercentage = percentageEnd;
+            }
+
+            // Fallback: assign to Q1 if out of range
+            return ['Q1'];
+        }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            initializeAllTabs();
+        });
+
+        
+        function populateCustomerFilter(tabIndex) {
+            const select = document.getElementById(`customer-${tabIndex}`);
+            // Clear existing options except the first one
+            while (select.options.length > 1) {
+                select.remove(1);
+            }
+            
+            // Add unique customers from bomFiles
+            allCustomers.forEach(customer => {
+                const option = document.createElement('option');
+                option.value = customer;
+                option.textContent = customer;
+                select.appendChild(option);
+            });
+        }
+
+        function populateLocationFilter(tabIndex) {
+            const select = document.getElementById(`location-${tabIndex}`);
+            const customerSelect = document.getElementById(`customer-${tabIndex}`);
+            const selectedCustomer = customerSelect.value;
+            
+            // Clear existing options except the first one
+            while (select.options.length > 1) {
+                select.remove(1);
+            }
+            
+            // If a customer is selected, show only its locations
+            // Otherwise show all locations
+            let locationsToShow = allLocations;
+            if (selectedCustomer && customerLocationMap[selectedCustomer]) {
+                locationsToShow = customerLocationMap[selectedCustomer];
+            }
+            
+            locationsToShow.forEach(location => {
+                const option = document.createElement('option');
+                option.value = location;
+                option.textContent = location;
+                select.appendChild(option);
+            });
+            
+            // Reset location selection if current selection is not in new list
+            const currentValue = select.value;
+            if (currentValue && !locationsToShow.includes(currentValue)) {
+                select.value = '';
+            }
+        }
+
+        function resetFilters(tabIndex) {
+            // Reset all filters for the given tab
+            document.getElementById(`customer-${tabIndex}`).value = '';
+            document.getElementById(`location-${tabIndex}`).value = '';
+            document.getElementById(`category-${tabIndex}`).value = '';
+            if (tabIndex === 0) {
+                document.getElementById(`section-${tabIndex}`).value = '';
+            }
+            document.getElementById(`quarter-${tabIndex}`).value = '';
+            document.getElementById(`search-${tabIndex}`).value = '';
+            
+            // Trigger filter update
+            filterTab(tabIndex);
+        }
+
+function initializeAllTabs() {
+            for (let i = 0; i < 3; i++) {
+                populateCustomerFilter(i);
+                populateLocationFilter(i);
+                populateTable(i);
+                if (i === 0) {
+                    populateSectionFilter(0);
+                }
+                createCharts(i);
+            }
+            populateMetadata();
+            populateFilesTable();
+        }
+
+        function switchTab(tabIndex) {
+            // Hide all tabs
+            for (let i = 0; i < 4; i++) {
+                document.getElementById(`tab-${i}`).classList.remove('active');
+                document.querySelectorAll('.tab-button')[i].classList.remove('active');
+            }
+
+            // Show selected tab
+            document.getElementById(`tab-${tabIndex}`).classList.add('active');
+            document.querySelectorAll('.tab-button')[tabIndex].classList.add('active');
+            currentTab = tabIndex;
+
+            // Redraw charts if needed
+            setTimeout(() => {
+                for (let i = 0; i < 3; i++) {
+                    if (charts[`category-${i}`]) {
+                        charts[`category-${i}`].resize();
+                    }
+                    if (charts[`section-${i}`]) {
+                        charts[`section-${i}`].resize();
+                    }
+                    if (charts[`items-${i}`]) {
+                        charts[`items-${i}`].resize();
+                    }
+                }
+            }, 100);
+        }
+
+        function getFilteredData(tabIndex) {
+            const sheetName = sheetNames[tabIndex];
+            const originalData = bomData[sheetName];
+            let data = [];
+
+            // Process each row with its original index to maintain consistency with getComponentQuarters
+            for (let i = 0; i < originalData.length; i++) {
+                const row = originalData[i];
+
+                // Skip metadata rows
+                const isMetadata = ['Location', '# of Bldg', 'Focus ID', 'SFDC ID', 'Target Start Date', 'Target End Date'].includes(row.Model_PN);
+
+                // Apply customer filter
+                const customerFilter = document.getElementById(`customer-${tabIndex}`)?.value || '';
+                if (customerFilter) {
+                    // For now, show all data if customer filter is set (since all rows are marked as Multiple)
+                    // In a real scenario, each row would have actual customer info
+                    // This filter is functional for potential future data structure updates
+                }
+
+                // Apply location filter
+                const locationFilter = document.getElementById(`location-${tabIndex}`)?.value || '';
+                if (locationFilter) {
+                    // Similar to customer filter - functional when data structure supports it
+                }
+
+                // Apply category filter
+                const categoryFilter = document.getElementById(`category-${tabIndex}`).value;
+                if (categoryFilter && row.Category !== categoryFilter) {
+                    continue;
+                }
+
+                // Apply section filter (only for tab 0)
+                if (tabIndex === 0) {
+                    const sectionFilter = document.getElementById(`section-${tabIndex}`).value;
+                    if (sectionFilter && row.Section !== sectionFilter) {
+                        continue;
+                    }
+                }
+
+                // Apply quarter filter (for tabs 0, 1, 2)
+                const quarterFilter = document.getElementById(`quarter-${tabIndex}`).value;
+                if (quarterFilter && !isMetadata) {
+                    const componentQuarters = getComponentQuarters(i);
+                    if (!componentQuarters.includes(quarterFilter)) {
+                        continue;
+                    }
+                }
+
+                // Apply search filter
+                const searchFilter = document.getElementById(`search-${tabIndex}`).value.toLowerCase();
+                if (searchFilter) {
+                    const matchesSearch = row.Model_PN.toLowerCase().includes(searchFilter) ||
+                                         row.Description.toLowerCase().includes(searchFilter);
+                    if (!matchesSearch) {
+                        continue;
+                    }
+                }
+
+                // If all filters pass, add to result
+                data.push(row);
+            }
+
+            return data;
+        }
+
+        function populateTable(tabIndex) {
+            const data = getFilteredData(tabIndex);
+            const tbody = document.getElementById(`tbody-${tabIndex}`);
+            tbody.innerHTML = '';
+
+            if (data.length === 0) {
+                const colSpan = tabIndex === 0 ? 28 : 27; // Model/PN + Description + Category + [Section] + Dell PN + 18 files + Total
+                tbody.innerHTML = `<tr><td colspan="${colSpan}" class="no-data">No components found</td></tr>`;
+                return;
+            }
+
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                const fileQtys = getPerFileQuantities(row.Quantity);
+
+                let rowHTML = `
+                    <td>${row.Model_PN}</td>
+                    <td>${row.Description}</td>
+                    <td>${row.Category}</td>
+                    ${tabIndex === 0 ? `<td>${row.Section}</td>` : ''}
+                    <td>${row.Dell_PN}</td>
+                `;
+
+                // Add per-file quantities
+                fileQtys.forEach(qty => {
+                    rowHTML += `<td style="text-align: center;">${qty}</td>`;
+                });
+
+                // Add total quantity
+                rowHTML += `<td style="text-align: center; font-weight: 600;">${row.Quantity}</td>`;
+
+                tr.innerHTML = rowHTML;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function populateSectionFilter(tabIndex) {
+            const select = document.getElementById(`section-${tabIndex}`);
+            const sheetName = sheetNames[tabIndex];
+            const sections = new Set();
+
+            bomData[sheetName].forEach(row => {
+                if (row.Section) {
+                    sections.add(row.Section);
+                }
+            });
+
+            const sortedSections = Array.from(sections).sort();
+            sortedSections.forEach(section => {
+                const option = document.createElement('option');
+                option.value = section;
+                option.textContent = section;
+                select.appendChild(option);
+            });
+        }
+
+        function createCharts(tabIndex) {
+            const data = getFilteredData(tabIndex);
+
+            // Category chart
+            const categoryData = {};
+            data.forEach(row => {
+                categoryData[row.Category] = (categoryData[row.Category] || 0) + 1;
+            });
+
+            const categoryCtx = document.getElementById(`chart-category-${tabIndex}`).getContext('2d');
+            if (charts[`category-${tabIndex}`]) {
+                charts[`category-${tabIndex}`].destroy();
+            }
+            charts[`category-${tabIndex}`] = new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(categoryData),
+                    datasets: [{
+                        data: Object.values(categoryData),
+                        backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#00f2fe']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { size: 12 },
+                                padding: 15
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Section chart (only for tab 0)
+            if (tabIndex === 0) {
+                const sectionData = {};
+                data.forEach(row => {
+                    sectionData[row.Section] = (sectionData[row.Section] || 0) + 1;
+                });
+
+                const sectionCtx = document.getElementById(`chart-section-${tabIndex}`).getContext('2d');
+                if (charts[`section-${tabIndex}`]) {
+                    charts[`section-${tabIndex}`].destroy();
+                }
+                charts[`section-${tabIndex}`] = new Chart(sectionCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(sectionData),
+                        datasets: [{
+                            label: 'Components',
+                            data: Object.values(sectionData),
+                            backgroundColor: '#667eea'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                labels: {
+                                    font: { size: 12 }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Count by Items chart - vertical bar chart sorted by total quantity per item
+            const itemsData = {};
+            data.forEach(row => {
+                // Skip metadata rows
+                if (!['Location', '# of Bldg', 'Focus ID', 'SFDC ID', 'Target Start Date', 'Target End Date'].includes(row.Model_PN)) {
+                    // Sum quantities across BOM files for each component
+                    const qty = row.Quantity || 0;
+                    itemsData[row.Model_PN] = (itemsData[row.Model_PN] || 0) + qty;
+                }
+            });
+
+            // Sort by quantity (highest first)
+            const sortedItems = Object.entries(itemsData)
+                .filter(([key, value]) => value > 0)  // Only show items with quantity > 0
+                .sort((a, b) => b[1] - a[1])
+                .reduce((acc, [key, value]) => {
+                    acc[key] = value;
+                    return acc;
+                }, {});
+
+            const itemsCtx = document.getElementById(`chart-items-${tabIndex}`).getContext('2d');
+            if (charts[`items-${tabIndex}`]) {
+                charts[`items-${tabIndex}`].destroy();
+            }
+            charts[`items-${tabIndex}`] = new Chart(itemsCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(sortedItems),
+                    datasets: [{
+                        label: 'Total Quantity Per Component',
+                        data: Object.values(sortedItems),
+                        backgroundColor: '#667eea',
+                        borderColor: '#667eea',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                font: { size: 12 }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45,
+                                font: { size: 10 }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function filterTab(tabIndex) {
+            populateTable(tabIndex);
+            createCharts(tabIndex);
+        }
+
+        function populateMetadata() {
+            // Extract unique values from bomFiles
+            const uniqueCustomers = [...new Set(bomFiles.map(f => f.customer))].join(', ');
+            const uniqueLocations = [...new Set(bomFiles.map(f => f.location))].join(', ');
+            const uniqueFocusIds = [...new Set(bomFiles.filter(f => f.focusId !== 'NOT FOUND').map(f => f.focusId))].join(', ');
+            const uniqueSfdcIds = [...new Set(bomFiles.filter(f => f.sfdcId !== 'NOT FOUND').map(f => f.sfdcId))].join(', ');
+            const validDates = bomFiles.filter(f => f.targetStartDate !== 'NOT FOUND');
+            const startDates = validDates.map(f => f.targetStartDate).sort();
+            const endDates = validDates.map(f => f.targetEndDate).sort();
+            const minDate = startDates.length > 0 ? startDates[0] : 'NOT FOUND';
+            const maxDate = endDates.length > 0 ? endDates[endDates.length - 1] : 'NOT FOUND';
+
+            const metadata = [
+                { label: 'Total BOM Files', value: `${bomFiles.length} files` },
+                { label: 'Customers', value: uniqueCustomers || 'N/A' },
+                { label: 'Locations', value: uniqueLocations || 'N/A' },
+                { label: 'Focus IDs', value: uniqueFocusIds || 'Not assigned' },
+                { label: 'SFDC IDs', value: uniqueSfdcIds || 'Not assigned' },
+                { label: 'Earliest Target Start', value: minDate },
+                { label: 'Latest Target End', value: maxDate }
+            ];
+
+            const tbody = document.getElementById('metadata-tbody');
+            tbody.innerHTML = '';
+            metadata.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${row.label}</strong></td>
+                    <td>${row.value}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function populateFilesTable() {
+            const tbody = document.getElementById('files-tbody');
+            tbody.innerHTML = '';
+            bomFiles.forEach(file => {
+                const tr = document.createElement('tr');
+                const focusIdStyle = file.focusId === 'NOT FOUND' ? 'color: #d9534f;' : '';
+                const sfdcIdStyle = file.sfdcId === 'NOT FOUND' ? 'color: #d9534f;' : '';
+                tr.innerHTML = `
+                    <td>${file.name}</td>
+                    <td>${file.customer}</td>
+                    <td>${file.location}</td>
+                    <td style="${focusIdStyle}"><strong>${file.focusId}</strong></td>
+                    <td style="${sfdcIdStyle}">${file.sfdcId}</td>
+                    <td>${file.targetStartDate}</td>
+                    <td>${file.targetEndDate}</td>
+                    <td><strong>${file.quarter}</strong></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    </script>
+</body>
+</html>
